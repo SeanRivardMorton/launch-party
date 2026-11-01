@@ -1,7 +1,13 @@
 import { test, expect, type BrowserContext, type WebSocketRoute } from '@playwright/test'
 import { execFileSync } from 'node:child_process'
+import { atlasFixture } from '../atlas-fixture'
 
 const origin = 'http://localhost:3107'
+test('atlas decoding and deterministic composition execute inside the actual Workers runtime', async ({ request }) => {
+  const response = await request.get('http://localhost:3108/verify')
+  expect(response.status()).toBe(200)
+  expect(await response.json()).toEqual({ width: 1536, height: 1872, frames: 57 })
+})
 function sql(statement: string) {
   execFileSync('pnpm', ['exec', 'wrangler', 'd1', 'execute', 'DB', '--local', '--command', statement], { stdio: 'pipe' })
 }
@@ -22,7 +28,10 @@ test('two authenticated clients: movement, emote, card, reconnect, mobile and re
     ids.push(await signup(a, 'TestBramble'), await signup(b, 'TestWillow'))
     const guild = `test-${crypto.randomUUID()}`
     sql(`INSERT INTO campfire_memberships(guild_id,user_id) VALUES('${guild}','${ids[0]}'),('${guild}','${ids[1]}')`)
+    for (const id of ids) sql(`INSERT INTO campfire_avatars(user_id,state,asset_key,asset_format) VALUES('${id}','ready','synthetic-test-atlas','codex-pet-v1')`)
     const pa = await a.newPage(); const pb = await b.newPage()
+    const fixture = atlasFixture()
+    for (const page of [pa, pb]) await page.route('**/api/campfire/avatar/**', route => route.fulfill({ contentType: 'image/png', body: Buffer.from(fixture) }))
     const wires: WebSocketRoute[] = []
     await pa.routeWebSocket('**/api/campfire/rooms/**/socket', socket => { wires.push(socket.connectToServer()) })
     await Promise.all([pa.goto('/campfire'), pb.goto('/campfire')])
@@ -31,10 +40,22 @@ test('two authenticated clients: movement, emote, card, reconnect, mobile and re
     const targetA = pa.locator('[data-player="TestBramble"]')
     const targetB = pb.locator('[data-player="TestBramble"]')
     const start = await targetA.evaluate(el => (el as HTMLElement).style.left)
+    const framesA = targetA.locator('.guild-sheet img')
+    const framesB = targetB.locator('.guild-sheet img')
+    await expect(framesA).toHaveAttribute('data-animation', 'idle')
+    const idleFrame = await framesA.getAttribute('data-frame')
+    await expect.poll(() => framesA.getAttribute('data-frame')).not.toBe(idleFrame)
+    await expect(framesB).toHaveAttribute('data-frame', '0')
     await pa.locator('.guild-scene').click({ position: { x: 900, y: 250 } })
     await expect.poll(() => targetA.evaluate(el => (el as HTMLElement).style.left)).not.toBe(start)
+    await expect(framesA).toHaveAttribute('data-animation', 'running-right')
     await expect.poll(async () => (await targetA.evaluate(el => (el as HTMLElement).style.left)) === (await targetB.evaluate(el => (el as HTMLElement).style.left))).toBe(true)
     await pa.getByRole('button', { name: '✨ cheer' }).click()
+    await expect(framesA).toHaveAttribute('data-animation', 'jumping')
+    const jumpFrame = await framesA.getAttribute('data-frame')
+    await expect.poll(() => framesA.getAttribute('data-frame')).not.toBe(jumpFrame)
+    await expect(framesB).toHaveAttribute('data-animation', 'idle')
+    await expect(framesB).toHaveAttribute('data-frame', '0')
     await expect(pb.locator('[data-player="TestBramble"] .guild-emote')).toHaveText('✨')
     await targetB.tap()
     await expect(pb.getByRole('dialog')).toContainText('Synthetic browser verification character')
@@ -94,8 +115,12 @@ test('gateway rejects anonymous, wrong-origin and nonmember upgrades; fallback p
     id = await signup(context, 'TestOutsider')
     const denied = await context.request.get('/api/campfire/rooms/not-your-guild/socket', { headers: { origin, upgrade: 'websocket', 'x-campfire-user': 'spoofed' } })
     expect(denied.status()).toBe(403)
-    const generate = await context.request.post('/api/campfire/generate', { headers: { origin } })
-    expect(generate.status()).toBe(503)
+    const settings = await (await context.request.get('/api/campfire/me')).json()
+    // Never incur provider charges from an automated browser test on a keyed dev server.
+    if (!settings.generationEnabled) {
+      const generate = await context.request.post('/api/campfire/generate', { headers: { origin } })
+      expect(generate.status()).toBe(503)
+    }
     for (let i = 0; i < 2; i++) {
       const response = await context.request.get('/api/campfire/me')
       const me = await response.json()

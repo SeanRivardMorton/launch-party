@@ -32,16 +32,35 @@ owned by the existing scene components.
   the clearing supports arrow keys, click and touch.
 - D1 persists character profiles and avatar state. Static SVG fallback is chosen
   from the saved class and reused; it is **hand-drawn**, not generated artwork.
-- Explicit **Create AI sprite** starts an optional, saved, single-frame 1024×1024
-  PNG sprite sheet in a durable `AvatarGeneration` alarm. Generation never runs
-  just because a profile renders. Generated framing/transparency still requires
-  inspection with real outputs; no walk-cycle claim is made.
+- Explicit **Create animated sprite** starts an optional, saved **Codex Pets-style
+  atlas**: 1536×1872 PNG, 8 columns × 9 rows, 192×208 cells and 57 used frames.
+  Rows are idle, running-right, running-left, waving, jumping, failed, waiting,
+  task-running and review. Timing follows OpenAI hatch-pet's published per-frame
+  durations. Walking selects directional rows from the authoritative trajectory;
+  wave/heart select waving and cheer selects jumping. Idle animates in place;
+  there is no automatic wandering. Reduced motion displays first idle frame.
+- Generation makes **up to 10 billable image requests per attempt**: one canonical
+  character (optionally grounded in the previous sprite, updated for current
+  character choices), then nine separate pose strips through the Images Edits API,
+  each grounded in that canonical image and a layout-only guide. The UI discloses
+  the request bound and progress. Generation never runs on page rendering or tests.
+- Pose strips use the documented 1536×1024 size. Pure-JavaScript `fast-png` decodes
+  and assembles the final exact atlas in the Worker; the image model is not trusted
+  to produce final atlas geometry. One shared nearest-neighbor transform preserves
+  scale/baseline across all rows and retains jumping displacement. Unused cells
+  and transparent RGB are zero. Bad dimensions, non-RGBA output, empty/opaque,
+  clipped, extra or exactly duplicated frames fail safely. These checks do not
+  prove correct identity/gait: real output still requires visual QA.
 - Two atomic attempt reservations/account, including failed provider attempts.
-  Concurrent starts are rejected; stale pending work expires after three minutes;
+  Concurrent starts are rejected; each completed/started row renews a three-minute
+  stale-work lease, with a 25-minute total job deadline;
   reservation tokens fence stale completions. Prompt inputs are snapshotted at
   reservation time. There is a 110-second provider timeout, bounded response bytes,
   PNG signature/dimension validation and no automatic billable provider retry.
-  A durable claim prevents a retried alarm from calling the provider twice.
+  Each alarm performs at most one image request, saving its step and staged R2
+  sources durably. A claim per token/step prevents a retried alarm billing twice.
+  Only a fully assembled atlas replaces the prior sprite. Staged files are cleaned
+  on success/failure; an R2 lifecycle rule on `staging/` is recommended for outages.
 - R2 stores private PNG bytes. D1 stores state/key/model/character inputs. Artwork
   is served only to its owner or signed-in members of a shared guild with a
   published target card. Provider errors are not returned or logged to clients.
@@ -63,6 +82,11 @@ Migration `0005_live_campfire.sql` deliberately does **not** create/redefine
 | `campfire_memberships` | `(guild_id, user_id)` primary key; user FK to Better Auth; opaque guild-directory ID |
 | `campfire_profiles` | One character/user; nickname, faction, race, class, two professions, bio, explicit publish flag |
 | `campfire_avatars` | One state/account; bounded attempts, reservation token, input snapshot, asset key/model |
+
+Forward-only migration `0006_animated_sprite_atlas.sql` adds asset format/revision,
+generation progress and safe error codes. Existing single-frame assets remain
+usable and are never interpreted as an atlas. They need explicit regeneration to
+gain animation; this migration does not reset the two-attempt allowance.
 
 The onboarding/guild owner must supply a **trusted authenticated membership
 grant/revoke operation** using real guild IDs, validating the selected guild
@@ -95,7 +119,8 @@ tree wholesale. The independent flame PR can be integrated separately.
 **No remote resources were provisioned, secrets set, migrations applied remotely,
 or production deployment performed for this work.** Before deploying:
 
-1. Review/apply forward-only D1 migration `0005_live_campfire.sql`, alongside the
+1. Review/apply forward-only D1 migrations `0005_live_campfire.sql` and
+   `0006_animated_sprite_atlas.sql`, alongside the
    guild owner's migrations when they land. Existing `DB` and Better Auth tables
    are retained. Grant actual authenticated memberships through the agreed flow.
 2. Create a private R2 bucket named `launch-party-avatars` (or update the binding
@@ -112,17 +137,23 @@ or production deployment performed for this work.** Before deploying:
    access and the existing custom route. Keep the current domain identifiers.
 
 The current docs (checked 1 Nov 2026) recommend the Images API for this one-image
-use case. This code selects `gpt-image-2.5-flare` with low quality, PNG/transparent
-background, `n=1`, 1024-square output and a hashed safety identifier. **No real
-OpenAI request or model-access success was verified; no credentials were
-available.** A real successful output, framing/transparency inspection, storage
-reuse and approved cost verification remain required before claiming AI acceptance.
+use case. This code selects `gpt-image-2.5-flare` with medium quality, PNG/transparent
+background, `n=1` and a hashed safety identifier. Canonical art is 1024-square;
+grounded edits produce 1536×1024 pose strips. **The animated-atlas pipeline has
+not been verified with real OpenAI outputs.** A local key is now configured by the
+owner, but the implementation tests make no real billable requests. Real successful
+generation, identity/gait/framing/transparency inspection, storage reuse and cost
+verification remain required before claiming animated-generation acceptance.
 
 References checked:
 - https://developers.openai.com/api/docs/guides/image-generation
 - https://developers.cloudflare.com/durable-objects/best-practices/websockets/
 - https://developers.cloudflare.com/durable-objects/api/alarms/
 - https://developers.cloudflare.com/r2/api/workers/workers-api-usage/
+- https://developers.openai.com/codex/pets.md
+- https://github.com/openai/skills/tree/main/skills/.curated/hatch-pet
+  (atlas contract, animation-row semantics and timings; no pet artwork copied)
+- https://developers.openai.com/api/reference/resources/images/methods/generate
 
 ## Reproducible local verification
 
@@ -143,16 +174,23 @@ pnpm test:browser
 ```
 
 Verified locally:
-- 12 Vitest checks: malformed/spoofed/oversized frames, movement bounds/speed,
+- 17 Vitest checks: malformed/spoofed/oversized frames, movement bounds/speed,
   token bucket/clock rollback, public projection, origin/session query boundary,
   new-instance attachment recovery, passive viewer revocation, emote/snapshot
   delivery, credential-unavailable and forced mocked provider-500 failure, actual SQLite duplicate/stale/attempt
-  fencing behavior.
-- Two Playwright tests using real local Better Auth, D1, Worker and DO WebSockets:
+  fencing behavior, atlas timings/state selection, malformed/static strips,
+  exact deterministic atlas geometry/transparency/jumping displacement, and an
+  entire mocked ten-request job resumed in a fresh instance on every step.
+- Three Playwright tests, including real local Better Auth, D1, Worker and DO WebSockets:
   two accounts see movement/emotes/cards; desktop keyboard; mobile tap; reduced
   motion; native dialog Escape/focus restoration; forced WebSocket interruption
   with automatic reconnect/full snapshot; reload position recovery; unauthorized
-  and cross-origin rejection; membership revocation; fallback persistence.
+  and cross-origin rejection; membership revocation; fallback persistence. Synthetic
+  colored atlas fixtures verify actual cell/frame playback and reduced-motion
+  freezing without spending API credits. A separate local-only Worker proves
+  decoding and assembly run in Cloudflare's actual runtime, not just Node.
+  This caught `pngjs`'s incompatible Inflate inheritance; it was replaced by
+  `fast-png` before acceptance. The probe has no application bindings or credentials.
 - Layout/control visibility at 1280×720, 390×844, 320×568, 844×390 and 1440×900.
   Screenshots are in ignored `test-results/campfire-{desktop,mobile}.png`.
 - Local migrations applied; `pnpm check` and `pnpm build` passed. Vite reports
@@ -160,7 +198,7 @@ Verified locally:
 
 The hibernation unit test explicitly constructs a fresh room instance using
 serialized attachments; an actual deployed eviction/recovery was **not** verified.
-Production, real generated output, onboarding membership integration and provider
-failure with real credentials remain unverified. CI checks all PR target branches
+Production, real animated generated output, onboarding membership integration and
+provider failure with real credentials remain unverified. CI checks all PR target branches
 (including stacks), runs unit tests/typecheck/build, and deploys only on a main
 push. Browser checks currently require the documented local auth configuration.

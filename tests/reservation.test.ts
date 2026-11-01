@@ -7,6 +7,7 @@ it('atomic SQLite reservation prevents duplicate jobs, caps all attempts, and fe
   const db = new DatabaseSync(':memory:')
   db.exec('CREATE TABLE user(id TEXT PRIMARY KEY); INSERT INTO user VALUES (\'u\')')
   db.exec(readFileSync(new URL('../migrations/0005_live_campfire.sql', import.meta.url), 'utf8'))
+  db.exec(readFileSync(new URL('../migrations/0006_animated_sprite_atlas.sql', import.meta.url), 'utf8'))
   const reserve = db.prepare(RESERVE_AVATAR)
   const now = 1_000_000
   expect(reserve.run('u', 'first', '{"race":"Dwarf"}', now, now - STALE_MS).changes).toBe(1)

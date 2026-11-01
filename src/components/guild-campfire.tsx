@@ -2,9 +2,10 @@ import { useEffect, useRef, useState, type CSSProperties } from 'react'
 import { PixelCharacter } from './pixel-character'
 import { emotes, position, WORLD, type Card, type ClientMessage, type Peer, type ServerMessage } from '@/lib/campfire/protocol'
 import { authClient } from '@/lib/auth-client'
+import { SpriteSheet } from './sprite-sheet'
 import './guild-campfire.css'
 
-type Me = { profile: (Card & { published: boolean }) | null; guilds: string[]; avatar: { state: string; attempts: number }; generationEnabled: boolean }
+type Me = { profile: (Card & { published: boolean }) | null; guilds: string[]; avatar: { state: string; attempts: number; progress?: number; total_steps?: number; error_code?: string }; generationEnabled: boolean }
 const symbols = { wave: '👋', cheer: '✨', heart: '♥' }
 async function api<T = { error?: string }>(path: string, method = 'GET', body?: unknown): Promise<T> {
   const response = await fetch(`/api/campfire/${path}`, { method, headers: body ? { 'content-type': 'application/json' } : undefined, body: body ? JSON.stringify(body) : undefined })
@@ -16,6 +17,8 @@ async function api<T = { error?: string }>(path: string, method = 'GET', body?: 
 function Sprite({ peer, offset, onSelect }: { peer: Peer; offset: number; onSelect: () => void }) {
   const ref = useRef<HTMLButtonElement>(null)
   const [emote, setEmote] = useState('')
+  const [failedUrl, setFailedUrl] = useState('')
+  const artwork = peer.card.avatarUrl && failedUrl !== peer.card.avatarUrl
   useEffect(() => {
     const node = ref.current
     if (!node) return
@@ -40,13 +43,15 @@ function Sprite({ peer, offset, onSelect }: { peer: Peer; offset: number; onSele
   return <button ref={ref} className="guild-sprite" data-player={peer.card.nickname} style={{ '--faction': peer.card.faction === 'Horde' ? '#e8a391' : '#a6cde7' } as CSSProperties}
     onClick={event => { event.stopPropagation(); onSelect() }} aria-label={`View ${peer.card.nickname}'s published character card`}>
     {emote && <span className="guild-emote" aria-label={peer.emote?.kind}>{emote}</span>}
-    {peer.card.avatarUrl ? <img src={peer.card.avatarUrl} alt="" onError={event => { event.currentTarget.hidden = true; event.currentTarget.nextElementSibling?.removeAttribute('hidden') }} /> : null}
-    <span hidden={!!peer.card.avatarUrl}><PixelCharacter kind={peer.card.characterClass.toLowerCase().includes('priest') ? 'priest' : peer.card.characterClass.toLowerCase().includes('mage') ? 'mage' : 'warrior'} /></span>
+    {artwork ? peer.card.avatarFormat === 'codex-pet-v1'
+      ? <SpriteSheet peer={peer} offset={offset} onError={() => setFailedUrl(peer.card.avatarUrl!)} />
+      : <img src={peer.card.avatarUrl!} alt="" onError={() => setFailedUrl(peer.card.avatarUrl!)} />
+      : <span><PixelCharacter kind={peer.card.characterClass.toLowerCase().includes('priest') ? 'priest' : peer.card.characterClass.toLowerCase().includes('mage') ? 'mage' : 'warrior'} /></span>}
     <span className="guild-name">{peer.card.nickname}</span>
   </button>
 }
 
-function Scene({ guildId }: { guildId: string }) {
+function Scene({ guildId, avatarRevision }: { guildId: string; avatarRevision: string | null }) {
   const [peers, setPeers] = useState<Record<string, Peer>>({})
   const [self, setSelf] = useState('')
   const [status, setStatus] = useState('Connecting…')
@@ -99,6 +104,9 @@ function Scene({ guildId }: { guildId: string }) {
     }, 25_000)
     return () => { disposed = true; clearTimeout(timer); clearInterval(heartbeat); socket.current?.close() }
   }, [guildId])
+  useEffect(() => {
+    if (socket.current?.readyState === WebSocket.OPEN) socket.current.send(JSON.stringify({ type: 'sync' }))
+  }, [avatarRevision])
   const send = (message: ClientMessage) => {
     if (socket.current?.readyState !== WebSocket.OPEN) return
     if (message.type === 'move') {
@@ -182,9 +190,10 @@ export function GuildCampfireScreen() {
         <nav className="guild-toolbar"><button onClick={() => setEditing(true)}>Edit character</button><label>Guild<select aria-label="Guild campfire" value={guild} onChange={e => setGuild(e.target.value)}>{me.guilds.map(id => <option key={id}>{id}</option>)}</select></label><button disabled={!me.generationEnabled || generationBusy || me.avatar.state === 'pending' || me.avatar.attempts >= 2} onClick={async () => {
           setGenerationBusy(true)
           try { await api('generate', 'POST'); await refresh() } catch (e) { setError((e as Error).message) } finally { setGenerationBusy(false) }
-        }}>{me.avatar.state === 'pending' ? 'Creating sprite…' : 'Create AI sprite'}</button></nav>
-        <p className="guild-art-status" role="status">{error || (me.avatar.state === 'ready' ? 'Saved AI artwork · reused across visits' : me.avatar.state === 'pending' ? 'Generation queued · fallback is usable while you wait' : `Hand-drawn fallback sprite · ${me.avatar.state === 'failed' ? 'generation failed' : 'AI generation optional'}`)} · {me.avatar.attempts}/2 attempts</p>
-        {guild && me.profile.published ? <Scene key={guild} guildId={guild} /> : <section className="guild-welcome"><h2>{!me.profile.published ? 'Publish your character to enter.' : 'Your character is ready.'}</h2><p>{!me.profile.published ? 'Choose Edit character to share your character plan with guild members.' : 'Guild membership has not been linked to your account yet. Your saved character and fallback sprite are ready for the guild onboarding handoff.'}</p></section>}
+        }}>{me.avatar.state === 'pending' ? `Creating frames ${me.avatar.progress || 0}/${me.avatar.total_steps || 11}…` : 'Create animated sprite'}</button></nav>
+        <p className="guild-art-status" role="status">{error || (me.avatar.state === 'ready' ? me.profile.avatarFormat === 'codex-pet-v1' ? 'Saved animated sprite sheet · 9 animation rows' : 'Saved single-frame artwork · generate a new sheet for animation' : me.avatar.state === 'pending' ? 'Building animation rows · existing sprite stays usable' : `${me.profile.avatarUrl ? 'Saved artwork' : 'Hand-drawn fallback sprite'} · ${me.avatar.state === 'failed' ? `generation failed (${me.avatar.error_code || 'unavailable'})` : 'AI generation optional'}`)} · {me.avatar.attempts}/2 attempts</p>
+        {me.generationEnabled && me.avatar.state !== 'pending' && me.avatar.attempts < 2 && <p className="guild-generation-note">One sheet uses up to 10 billable image requests and may take several minutes. Existing sprites are kept if generation fails.</p>}
+        {guild && me.profile.published ? <Scene key={guild} guildId={guild} avatarRevision={me.profile.avatarUrl} /> : <section className="guild-welcome"><h2>{!me.profile.published ? 'Publish your character to enter.' : 'Your character is ready.'}</h2><p>{!me.profile.published ? 'Choose Edit character to share your character plan with guild members.' : 'Guild membership has not been linked to your account yet. Your saved character and fallback sprite are ready for the guild onboarding handoff.'}</p></section>}
       </>}
   </main>
 }

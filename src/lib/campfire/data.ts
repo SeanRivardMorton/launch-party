@@ -7,14 +7,15 @@ export const profileSchema = z.object({
   race: choice, characterClass: choice, professions: z.array(choice).max(2),
   bio: z.string().trim().max(280), published: z.boolean(),
 }).strict()
-export type ProfileRow = { user_id: string; nickname: string; faction: string; race: string; character_class: string; professions: string; bio: string; published: number; asset_key?: string | null }
+export type ProfileRow = { user_id: string; nickname: string; faction: string; race: string; character_class: string; professions: string; bio: string; published: number; asset_key?: string | null; asset_format?: 'single' | 'codex-pet-v1'; avatar_updated_at?: number }
 export function card(row: ProfileRow): Card {
   return { id: row.user_id, nickname: row.nickname, faction: row.faction, race: row.race,
     characterClass: row.character_class, professions: JSON.parse(row.professions), bio: row.bio,
-    avatarUrl: row.asset_key ? `/api/campfire/avatar/${encodeURIComponent(row.user_id)}` : null }
+    avatarUrl: row.asset_key ? `/api/campfire/avatar/${encodeURIComponent(row.user_id)}?v=${row.avatar_updated_at || 0}` : null,
+    avatarFormat: row.asset_format || 'single' }
 }
 export async function getProfile(db: D1Database, userId: string) {
-  return db.prepare(`SELECT p.*, a.asset_key FROM campfire_profiles p LEFT JOIN campfire_avatars a ON a.user_id=p.user_id WHERE p.user_id=?`).bind(userId).first<ProfileRow>()
+  return db.prepare(`SELECT p.*, a.asset_key, a.asset_format, a.asset_revision AS avatar_updated_at FROM campfire_profiles p LEFT JOIN campfire_avatars a ON a.user_id=p.user_id WHERE p.user_id=?`).bind(userId).first<ProfileRow>()
 }
 // Checked on upgrade AND every application message/broadcast, including after
 // hibernation. Never trust a browser-provided identity or a cached session alone.

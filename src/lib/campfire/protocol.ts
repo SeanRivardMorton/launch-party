@@ -13,6 +13,7 @@ export type Motion = { from: Point; to: Point; at: number; duration: number }
 export type Card = {
   id: string; nickname: string; faction: string; race: string; characterClass: string
   professions: string[]; bio: string; avatarUrl: string | null
+  avatarFormat?: 'single' | 'codex-pet-v1'
 }
 export type Peer = { id: string; card: Card; motion: Motion; emote?: { kind: typeof emotes[number]; at: number } }
 export type ServerMessage = { type: 'snapshot'; self: string; peers: Peer[]; now: number }

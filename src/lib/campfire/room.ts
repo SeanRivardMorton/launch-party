@@ -62,7 +62,21 @@ export class GuildCampfire extends DurableObject<Cloudflare.Env> {
     await this.ctx.storage.put(`rate:${a.peer.id}`, rate)
     const message = parseMessage(raw)
     if (!message) { ws.close(1008, 'Invalid message'); return }
-    if (message.type === 'sync') { await this.snapshot(ws); return }
+    if (message.type === 'sync') {
+      const row = await getProfile(this.env.DB, a.peer.id)
+      if (!row?.published) { ws.close(4001, 'Profile unpublished'); return }
+      const next = card(row)
+      if (JSON.stringify(next) !== JSON.stringify(a.peer.card)) {
+        // D1 yields to other events: do not rewind a move received while the
+        // refreshed artwork/profile was loading.
+        const latest = this.attachment(ws)
+        latest.peer.card = next
+        ws.serializeAttachment(latest)
+        await this.broadcast({ type: 'peer', peer: latest.peer, now })
+      }
+      await this.snapshot(ws)
+      return
+    }
     if (message.type === 'move') {
       a.peer.motion = move(a.peer.motion, message, now)
       await this.ctx.storage.put(`position:${a.peer.id}`, a.peer.motion)

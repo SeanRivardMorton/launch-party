@@ -33,7 +33,7 @@ describe('privacy and session boundary', () => {
     const row = { user_id: 'u', nickname: 'Bramble', faction: 'Horde', race: 'Orc', character_class: 'Warrior', professions: '["Mining"]', bio: 'Hello', published: 1, email: 'private@example.test', discord: 'private', asset_key: 'private-bucket-key' }
     const dto = card(row)
     expect(JSON.stringify(dto)).not.toMatch(/private|email|discord|asset_key/)
-    expect(dto.avatarUrl).toBe('/api/campfire/avatar/u')
+    expect(dto.avatarUrl).toBe('/api/campfire/avatar/u?v=0')
   })
   it('requires exact origin (including port), never just a matching hostname', () => {
     for (const origin of ['https://example.test.evil.test', 'http://example.test', 'https://example.test:444', 'null', '']) expect(sameOrigin(new Request('https://example.test/api', { headers: { origin } }))).toBe(false)

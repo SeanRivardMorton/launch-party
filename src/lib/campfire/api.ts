@@ -16,7 +16,7 @@ export async function campfireApi(request: Request, env: Cloudflare.Env) {
     const profile = await getProfile(env.DB, userId)
     const memberships = await env.DB.prepare('SELECT guild_id FROM campfire_memberships WHERE user_id=? ORDER BY guild_id').bind(userId).all<{ guild_id: string }>()
     await env.DB.prepare(`UPDATE campfire_avatars SET state='failed', updated_at=? WHERE user_id=? AND state='pending' AND updated_at<?`).bind(Date.now(), userId, Date.now() - STALE_MS).run()
-    const avatar = await env.DB.prepare('SELECT state, attempts FROM campfire_avatars WHERE user_id=?').bind(userId).first()
+    const avatar = await env.DB.prepare('SELECT state, attempts, progress, total_steps, error_code FROM campfire_avatars WHERE user_id=?').bind(userId).first()
     return json({ profile: profile ? { ...card(profile), published: !!profile.published } : null, guilds: memberships.results.map(m => m.guild_id), avatar: avatar || { state: 'not_requested', attempts: 0 }, generationEnabled: !!env.OPENAI_API_KEY && env.AVATAR_GENERATION_ENABLED === 'true' })
   }
   if (path === '/profile' && request.method === 'PUT') {
