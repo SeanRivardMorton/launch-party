@@ -42,7 +42,7 @@ pnpm build
 
 Verified on 1 November 2026:
 
-- Frozen dependency install; all four existing local D1 migrations; `pnpm check`; `pnpm build` (existing Vite CSS sourcemap warning only).
+- Frozen dependency install; all five existing local D1 migrations (including the newly merged guild-recruitment migration); `pnpm check`; `pnpm build` (existing Vite CSS sourcemap warning only).
 - `pnpm test:auth`: registration, UI and server 12-character minimum, duplicate account, invalid credentials, retained input/focused alerts, pending submit, visibility toggle, hydration-disabled POST form, real sign-in and retryable network error.
 - D1-backed session persistence on reload, account-name update persistence, session-aware landing header, no session token in account HTML, `no-store`, HttpOnly/SameSite/expiry checks.
 - Signout revocation verified with a separately copied session cookie, rejection of revoked/anonymous account updates, anonymous server-rendered `/account` redirect with no private content.

@@ -202,6 +202,9 @@ try {
     console.log('PASS anonymous /signup completion, guild publication/directory/invite regression; no account session created')
   }
   assert.deepEqual(errors, [], 'No uncaught browser errors')
+} catch (error) {
+  await page.screenshot({ path: 'test-results/auth-failure.png' })
+  throw error
 } finally {
   await anonymous.dispose()
   await context.close()
