@@ -149,3 +149,45 @@ select { background-color: var(--background); }
 @media(max-width:520px) and (max-height:700px) { .adventurer-lineup { height: 23vh; padding-top: 25px; } .party-caption { margin-bottom: 7px; } }
 @media(max-width:360px) { .header-link { display: none; } .site-header { padding-inline: 18px; } }
 @media(prefers-reduced-motion:reduce) { *,*::before,*::after { animation: none !important; transition: none !important; } }
+
+.presentation-signup { display: grid; place-items: center; min-height: 0; padding: 8px 24px; z-index: 4; }
+.signup-qr { display: block; width: min(400px, 72vw, 46dvh); aspect-ratio: 1; background: #fff; border-radius: 8px; overflow: hidden; box-shadow: 0 12px 50px #0005; }
+.signup-qr svg { display: block; width: 100%; height: 100%; }
+.signup-page { display: block; overflow-y: auto; padding: 32px 16px; }
+.signup-card { position: relative; width: min(490px, 100%); margin: auto; padding: 32px; background: var(--background); border: 1px solid var(--border); border-radius: 8px; box-shadow: 0 20px 80px #0005; }
+.signup-card h2 { font: 400 32px/1.1 Georgia, serif; letter-spacing: -.8px; }
+.signup-card .input, .signup-card select { font-size: 16px; }
+fieldset { min-width: 0; border: 0; margin: 0; padding: 0; }
+fieldset[hidden] { display: none; }
+.choice-field legend { color: var(--foreground); font-size: 12px; margin-bottom: 9px; }
+.role-choices { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+.check-choice { display: flex; align-items: center; gap: 10px; min-height: 42px; padding: 8px 10px; border: 1px solid var(--border); border-radius: 3px; margin-bottom: 7px; }
+.check-choice:has(input:checked) { border-color: var(--accent); background: #c6df9d0b; }
+.check-choice input { accent-color: var(--accent); width: 16px; height: 16px; flex-shrink: 0; }
+.signup-card .consent { margin-top: 4px; }
+.guild-nav { display: flex; justify-content: space-between; align-items: center; margin-bottom: 22px; color: var(--muted); font-size: 12px; }
+.guild-nav a, .directory-signup { display: flex; align-items: center; gap: 8px; }
+.guild-nav a:hover, .directory-signup:hover { color: var(--accent); }
+.directory-filters { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+.directory-filters label { font-size: 11px; }
+.directory-result { margin-top: 20px; }
+.guild-card { border: 1px solid var(--border); padding: 20px; border-radius: 4px; overflow-wrap: anywhere; }
+.guild-meta { font: 10px/1.6 monospace; color: var(--accent); }
+.guild-card h3 { font: 400 25px/1.2 Georgia, serif; margin: 10px 0 14px; }
+.guild-description { white-space: pre-wrap; color: var(--foreground); font-size: 13px; line-height: 1.7; margin-bottom: 20px; }
+.guild-note, .field-hint { display: block; color: var(--muted); font-size: 10px; line-height: 1.6; margin-top: 8px; }
+.empty-state { padding: 24px 0; color: var(--muted); font-size: 13px; }
+.empty-state .button { margin-top: 16px; }
+.directory-pagination { display: flex; align-items: center; justify-content: space-between; gap: 8px; margin-top: 16px; }
+.directory-pagination .button { padding-inline: 8px; gap: 8px; }
+.directory-pagination > span { font: 11px monospace; color: var(--muted); }
+.directory-signup { justify-content: center; margin-top: 16px; color: var(--muted); font-size: 11px; }
+textarea.input { resize: vertical; min-height: 96px; }
+.guild-invite { width: 100%; margin-top: 24px; text-align: left; }
+.guild-invite label { font-size: 11px; }
+.guild-invite .button { margin-top: 12px; }
+.guild-page-description { margin-top: 22px; overflow-wrap: anywhere; }
+.guild-context { color: var(--accent); font-size: 12px; margin-bottom: 16px; overflow-wrap: anywhere; }
+.signup-card h2 { overflow-wrap: anywhere; }
+@media(max-width:520px) { .signup-card { padding: 24px; } }
+@media(max-height:480px) and (min-width:600px) { .signup-qr { width: min(320px, 65dvh); } }
