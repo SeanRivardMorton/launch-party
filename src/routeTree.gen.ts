@@ -10,7 +10,10 @@
 
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as AccountRouteImport } from './routes/account'
 import { Route as CampfireRouteImport } from './routes/campfire'
+import { Route as LoginRouteImport } from './routes/login'
+import { Route as RegisterRouteImport } from './routes/register'
 import { Route as SignupRouteImport } from './routes/signup'
 import { Route as ApiGuildsRouteImport } from './routes/api/guilds'
 import { Route as ApiInterestRouteImport } from './routes/api/interest'
@@ -26,9 +29,24 @@ const IndexRoute = IndexRouteImport.update({
   path: '/',
   getParentRoute: () => rootRouteImport,
 } as any)
+const AccountRoute = AccountRouteImport.update({
+  id: '/account',
+  path: '/account',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const CampfireRoute = CampfireRouteImport.update({
   id: '/campfire',
   path: '/campfire',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const LoginRoute = LoginRouteImport.update({
+  id: '/login',
+  path: '/login',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const RegisterRoute = RegisterRouteImport.update({
+  id: '/register',
+  path: '/register',
   getParentRoute: () => rootRouteImport,
 } as any)
 const SignupRoute = SignupRouteImport.update({
@@ -79,7 +97,10 @@ const GuildsGuildIdManageRoute = GuildsGuildIdManageRouteImport.update({
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
+  '/account': typeof AccountRoute
   '/campfire': typeof CampfireRoute
+  '/login': typeof LoginRoute
+  '/register': typeof RegisterRoute
   '/signup': typeof SignupRoute
   '/api/guilds': typeof ApiGuildsRouteWithChildren
   '/api/interest': typeof ApiInterestRoute
@@ -92,7 +113,10 @@ export interface FileRoutesByFullPath {
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
+  '/account': typeof AccountRoute
   '/campfire': typeof CampfireRoute
+  '/login': typeof LoginRoute
+  '/register': typeof RegisterRoute
   '/signup': typeof SignupRoute
   '/api/guilds': typeof ApiGuildsRouteWithChildren
   '/api/interest': typeof ApiInterestRoute
@@ -106,7 +130,10 @@ export interface FileRoutesByTo {
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
+  '/account': typeof AccountRoute
   '/campfire': typeof CampfireRoute
+  '/login': typeof LoginRoute
+  '/register': typeof RegisterRoute
   '/signup': typeof SignupRoute
   '/api/guilds': typeof ApiGuildsRouteWithChildren
   '/api/interest': typeof ApiInterestRoute
@@ -121,7 +148,10 @@ export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
   fullPaths:
     | '/'
+    | '/account'
     | '/campfire'
+    | '/login'
+    | '/register'
     | '/signup'
     | '/api/guilds'
     | '/api/interest'
@@ -134,7 +164,10 @@ export interface FileRouteTypes {
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
+    | '/account'
     | '/campfire'
+    | '/login'
+    | '/register'
     | '/signup'
     | '/api/guilds'
     | '/api/interest'
@@ -147,7 +180,10 @@ export interface FileRouteTypes {
   id:
     | '__root__'
     | '/'
+    | '/account'
     | '/campfire'
+    | '/login'
+    | '/register'
     | '/signup'
     | '/api/guilds'
     | '/api/interest'
@@ -161,7 +197,10 @@ export interface FileRouteTypes {
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
+  AccountRoute: typeof AccountRoute
   CampfireRoute: typeof CampfireRoute
+  LoginRoute: typeof LoginRoute
+  RegisterRoute: typeof RegisterRoute
   SignupRoute: typeof SignupRoute
   ApiGuildsRoute: typeof ApiGuildsRouteWithChildren
   ApiInterestRoute: typeof ApiInterestRoute
@@ -181,11 +220,32 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof IndexRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/account': {
+      id: '/account'
+      path: '/account'
+      fullPath: '/account'
+      preLoaderRoute: typeof AccountRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/campfire': {
       id: '/campfire'
       path: '/campfire'
       fullPath: '/campfire'
       preLoaderRoute: typeof CampfireRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/login': {
+      id: '/login'
+      path: '/login'
+      fullPath: '/login'
+      preLoaderRoute: typeof LoginRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/register': {
+      id: '/register'
+      path: '/register'
+      fullPath: '/register'
+      preLoaderRoute: typeof RegisterRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/signup': {
@@ -268,7 +328,10 @@ const ApiGuildsRouteWithChildren = ApiGuildsRoute._addFileChildren(
 
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
+  AccountRoute: AccountRoute,
   CampfireRoute: CampfireRoute,
+  LoginRoute: LoginRoute,
+  RegisterRoute: RegisterRoute,
   SignupRoute: SignupRoute,
   ApiGuildsRoute: ApiGuildsRouteWithChildren,
   ApiInterestRoute: ApiInterestRoute,

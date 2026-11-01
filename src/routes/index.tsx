@@ -5,6 +5,7 @@ import { QRCodeSVG } from 'qrcode.react'
 import { Button } from '@/components/ui/button'
 import { PixelCharacter } from '@/components/pixel-character'
 import { WorldScene } from '@/components/world-scene'
+import { AuthNav } from '@/components/auth-nav'
 
 export const Route = createFileRoute('/')({ component: LandingPage })
 
@@ -33,7 +34,7 @@ function LandingPage() {
     <div className="screen-grain" aria-hidden="true" />
     <header className="site-header">
       <a className="brand" href="/" aria-label="ai-zeroth home"><span className="brand-rune" aria-hidden="true">✧</span></a>
-      <div className="header-right"><a className="button button-ghost button-sm" href="/guilds" aria-label="Browse guilds"><Users size={18} /></a><Button variant="ghost" size="sm" onClick={toggleTheme} aria-label={`Switch to ${theme === 'tavern' ? 'moonwell' : 'tavern'} theme`}>{theme === 'tavern' ? <Moon size={16} /> : <Sun size={16} />}</Button><a className="header-link" href="https://worldofwarcraft.blizzard.com/en-gb/forever" target="_blank" rel="noreferrer" aria-label="For WoW Forever"><ArrowRight size={13} /></a></div>
+      <div className="header-right"><AuthNav /><a className="button button-ghost button-sm" href="/guilds" aria-label="Browse guilds"><Users size={18} /></a><Button variant="ghost" size="sm" onClick={toggleTheme} aria-label={`Switch to ${theme === 'tavern' ? 'moonwell' : 'tavern'} theme`}>{theme === 'tavern' ? <Moon size={16} /> : <Sun size={16} />}</Button><a className="header-link" href="https://worldofwarcraft.blizzard.com/en-gb/forever" target="_blank" rel="noreferrer" aria-label="For WoW Forever"><ArrowRight size={13} /></a></div>
     </header>
 
     <main className="world" id="main">
