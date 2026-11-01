@@ -78,10 +78,27 @@ h1 em { font-weight: 400; color: var(--accent); }
 .camp-details .concept-label { font: 7px monospace; letter-spacing: .7px; opacity: .65; padding-left: 10px; border-left: 1px solid var(--border); }
 .site-footer { display: flex; justify-content: space-between; align-items: center; padding-inline: clamp(24px,4.2vw,80px); color: var(--muted); font: 8px/1.5 monospace; letter-spacing: .8px; gap: 15px; z-index: 2; }
 .footer-right { letter-spacing: 0; font: 9px/1.4 "Trebuchet MS",sans-serif; opacity: .8; }
-.campfire { transform-origin: 723px 810px; animation: flicker 2.4s steps(2) infinite; }
-.embers { animation: embers 3s steps(5) infinite; }
-@keyframes flicker { 0%,100% { opacity: 1; transform: scaleY(1); } 50% { opacity: .85; transform: scaleY(.9); } }
-@keyframes embers { 0% { opacity: 0; transform: translateY(7px); } 40% { opacity: .8; } 100% { opacity: 0; transform: translateY(-12px); } }
+/* Static artwork is the default, including when reduced motion is requested. */
+.campfire-flame { opacity: 0; }
+.campfire-flame-rest { opacity: 1; }
+.campfire-ember { opacity: .65; }
+@media(prefers-reduced-motion:no-preference) {
+  .campfire-flame { animation: campfire-flicker 1.2s steps(1, end) infinite; }
+  .campfire-flame-low { animation-delay: -.4s; }
+  .campfire-flame-high { animation-delay: -.8s; }
+  .campfire-glow { animation: campfire-glow 3.6s steps(6, end) infinite; }
+  .campfire-ember { animation: campfire-ember 3.2s steps(8, end) infinite; }
+  .campfire-ember:nth-child(2) { animation-duration: 3.8s; animation-delay: -1.3s; }
+  .campfire-ember:nth-child(3) { animation-duration: 2.8s; animation-delay: -2.1s; }
+}
+@keyframes campfire-flicker { 0% { opacity: 1; } 33.333%,100% { opacity: 0; } }
+@keyframes campfire-glow { 0%,100% { opacity: .8; } 35% { opacity: 1; } 70% { opacity: .7; } }
+@keyframes campfire-ember {
+  0% { opacity: 0; transform: translate(0, 14px); }
+  25% { opacity: .8; transform: translate(2px, 4px); }
+  60% { opacity: .5; transform: translate(-2px, -8px); }
+  100% { opacity: 0; transform: translate(4px, -22px); }
+}
 .signup-dialog { color: var(--foreground); background: var(--background); border: 1px solid var(--border); border-radius: 8px; width: min(490px, calc(100vw - 32px)); max-height: calc(100dvh - 24px); margin: auto; padding: 0; box-shadow: 0 30px 100px #0008; overflow: hidden; }
 .signup-dialog::backdrop { background: #041218ba; backdrop-filter: blur(8px); }
 .dialog-body { padding: 36px; position: relative; }
