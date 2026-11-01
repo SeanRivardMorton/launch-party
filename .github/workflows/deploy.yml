@@ -40,6 +40,9 @@ jobs:
       - name: Check types
         run: pnpm check
 
+      - name: Test campfire protocol and authorization
+        run: pnpm test
+
       - name: Build
         run: pnpm build
 

@@ -1,3 +1,9 @@
 # Copy to .dev.vars (gitignored). Generate a fresh secret; never use this placeholder.
 BETTER_AUTH_SECRET=replace-with-at-least-32-random-characters
 BETTER_AUTH_URL=http://localhost:3000
+
+# Optional: generation is OFF unless explicitly enabled and a key is available.
+# Verify model access and budget before enabling. Never put real credentials here.
+# OPENAI_API_KEY=
+# AVATAR_GENERATION_ENABLED=true
+# Playwright uses port 3107: set BETTER_AUTH_URL=http://localhost:3107 locally.
