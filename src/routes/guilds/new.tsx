@@ -49,7 +49,7 @@ function ListGuild() {
     }
   }
 
-  return <GuildAuthGate title="Sign in to lead a guild"><main className="site signup-page" data-theme="moonwell">
+  return <GuildAuthGate title="Sign in to lead a guild"><main className="site signup-page">
     <WorldScene />
     <section className="signup-card" aria-labelledby="list-guild-title">
       {status === 'success' ? <div className="success-state"><span className="success-icon"><CheckCheck size={30} /></span><h2 id="list-guild-title">Your party is forming.</h2><p>Your guild now has its own Launchparty page. Share your invite link so people can learn about your crew and apply to join.</p><GuildInvite path={path} /><p>Your account is the guild lead. Open the guild hall to review applicants, appoint officers and manage plans.</p><a className="button button-primary" href={`${path}/manage`}>Open guild hall<ArrowRight size={16} /></a><a className="directory-signup" href={path}>View my guild<ArrowRight size={14} /></a></div> : <>

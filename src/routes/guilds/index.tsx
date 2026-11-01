@@ -39,7 +39,7 @@ function GuildDirectory() {
     return () => controller.abort()
   }, [faction, region, page, retry])
 
-  return <main className="site signup-page" data-theme="moonwell">
+  return <main className="site signup-page">
     <WorldScene />
     <section className="signup-card guild-directory" aria-labelledby="guilds-title">
       <nav className="guild-nav" aria-label="Guild navigation"><a href="/" aria-label="Back to campfire"><ArrowLeft size={18} /></a><a href="/guilds/new"><Plus size={14} />List a guild</a></nav>

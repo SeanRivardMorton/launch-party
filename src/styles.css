@@ -20,8 +20,8 @@ a { color: inherit; text-decoration: none; }
 button:focus-visible, a:focus-visible, input:focus-visible, select:focus-visible { outline: 2px solid var(--accent); outline-offset: 5px; }
 button:disabled { cursor: wait; opacity: .6; }
 h1, h2, p { margin: 0; }
-.site { --background: #0b232b; --foreground: #f0edda; --muted: #9cadac; --accent: #c6df9d; --border: #456064; --sky-top: #081b23; --sky-bottom: #24494d; --moon: #c9ddd1; --mountain-far: #1c3c43; --mountain-near: #16343b; --forest-far: #102e33; --forest-front: #081f25; --ground: #112e30; --path: #183738; --grass: #345344; color: var(--foreground); background: var(--background); width: 100%; height: 100dvh; overflow: hidden; position: relative; isolation: isolate; font: 14px/1.5 "Trebuchet MS", Arial, sans-serif; display: grid; grid-template-rows: 86px minmax(0, 1fr) 48px; }
-.site[data-theme="tavern"] { --background: #23251d; --accent: #edc780; --muted: #b6b7a0; --border: #626044; --sky-top: #1f2826; --sky-bottom: #55563c; --moon: #e9d5a5; --mountain-far: #3d4937; --mountain-near: #2c3b2d; --forest-far: #243529; --forest-front: #17271f; --ground: #233529; --path: #30402c; --grass: #5e6340; }
+.app-theme { display: contents; --foreground: #f0edda; }
+.site { color: var(--foreground); background: var(--background); width: 100%; height: 100dvh; overflow: hidden; position: relative; isolation: isolate; font: 14px/1.5 "Trebuchet MS", Arial, sans-serif; display: grid; grid-template-rows: 86px minmax(0, 1fr) 48px; }
 .world-scene { position: absolute; inset: 0; width: 100%; height: 100%; z-index: -2; pointer-events: none; }
 .screen-grain { position: absolute; inset: 0; z-index: 3; pointer-events: none; opacity: .12; background: repeating-linear-gradient(0deg, transparent 0 3px, #0003 3px 4px); }
 .site-header { display: flex; justify-content: space-between; align-items: center; padding-inline: clamp(24px,4.2vw,80px); gap: 20px; z-index: 4; }

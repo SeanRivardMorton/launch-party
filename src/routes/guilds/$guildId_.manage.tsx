@@ -14,7 +14,7 @@ function ManageGuild() {
 function GuildHall() {
   const { guildId } = Route.useParams()
   const { guild, loading, error, retry } = useGuild(guildId)
-  return <main className="site signup-page guild-community-page" data-theme="moonwell"><WorldScene /><section className="signup-card guild-hall-card" aria-labelledby="guild-hall-title">
+  return <main className="site signup-page guild-community-page"><WorldScene /><section className="signup-card guild-hall-card" aria-labelledby="guild-hall-title">
     <nav className="guild-nav"><a href={`/guilds/${encodeURIComponent(guildId)}`}>← Guild page</a><a href="/guilds">Guild directory</a></nav>
     <div className="dialog-kicker">GUILD HALL</div>
     <h2 id="guild-hall-title">{guild?.name || 'Your guild hall.'}</h2>

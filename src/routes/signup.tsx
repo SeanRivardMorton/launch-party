@@ -74,9 +74,9 @@ function SignupPage() {
     }
   }
 
-  if (guildId && (guildLoading || guildError || !guild)) return <main className="site signup-page" data-theme="moonwell"><WorldScene /><section className="signup-card">{guildLoading ? <p role="status">Finding your guild…</p> : <><h2>Guild unavailable.</h2><p className="dialog-description" role="alert">{guildError}</p><Button variant="outline" onClick={retryGuild}>Try again</Button><a className="directory-signup" href="/guilds">Browse other guilds<ArrowRight size={14} /></a></>}</section></main>
+  if (guildId && (guildLoading || guildError || !guild)) return <main className="site signup-page"><WorldScene /><section className="signup-card">{guildLoading ? <p role="status">Finding your guild…</p> : <><h2>Guild unavailable.</h2><p className="dialog-description" role="alert">{guildError}</p><Button variant="outline" onClick={retryGuild}>Try again</Button><a className="directory-signup" href="/guilds">Browse other guilds<ArrowRight size={14} /></a></>}</section></main>
 
-  return <main className="site signup-page" data-theme="moonwell">
+  return <main className="site signup-page">
     <WorldScene />
     <section className="signup-card" aria-labelledby="signup-title">
       {status === 'success' ? <div className="success-state" role="status">
