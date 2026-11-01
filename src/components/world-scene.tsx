@@ -20,8 +20,27 @@ export function WorldScene() {
     <path d="M340 900v-26h140v-22h110v-17h90v-16h110v16h130v17h100v22h100v26z" fill="var(--path)" />
     <g color="var(--forest-front)"><use href="#pine" x="-100" y="270" width="280" height="630" /><use href="#pine" x="25" y="510" width="165" height="390" /><use href="#pine" x="1250" y="320" width="260" height="585" /><use href="#pine" x="1215" y="570" width="130" height="325" /></g>
     <g fill="var(--grass)"><path d="M275 825h6v-14h4v14h9v-8h4v15h-23zm850-28h4v-14h5v14h8v-7h4v14h-21zM195 873h5v-12h5v12h9v-19h4v26h-23zm1030-4h4v-8h6v8h7v-16h5v23h-22z" /><path d="M435 785h12v3h-12zm500 10h16v3h-16zM315 858h18v3h-18zm770 19h12v3h-12z" /></g>
-    <ellipse cx="723" cy="801" rx="140" ry="65" fill="url(#fire-halo)" />
-    <g className="campfire"><path d="M701 811h45v5h-45zM710 806h29v5h-29z" fill="#45483e" /><path d="M709 800h8v-7h-4v-15h8v-17h5v-12h5v22h7v17h-4v12h-6v6h-19z" fill="#d57c4f" /><path d="M716 800v-13h7v-12h5v16h4v10h-7v5h-9z" fill="#f1bd71" /><path d="M720 800h6v6h-6z" fill="#f7df9c" /><path d="M710 816h28v4h-28z" fill="#815d40" /></g>
-    <g className="embers" fill="#f4c77e"><rect x="718" y="738" width="3" height="3" /><rect x="735" y="756" width="2" height="2" /><rect x="708" y="765" width="2" height="2" /></g>
+    <ellipse className="campfire-glow" cx="723" cy="801" rx="140" ry="65" fill="url(#fire-halo)" />
+    <g className="campfire">
+      <path className="campfire-stones" d="M701 811h45v5h-45zM710 806h29v5h-29z" fill="#45483e" />
+      {/* Swap whole pixel silhouettes so flame edges stay crisp and the logs never move. */}
+      <g className="campfire-flame campfire-flame-rest">
+        <path d="M709 800h8v-7h-4v-15h8v-17h5v-12h5v22h7v17h-4v12h-6v6h-19z" fill="#d57c4f" />
+        <path d="M716 800v-13h7v-12h5v16h4v10h-7v5h-9z" fill="#f1bd71" />
+        <path d="M720 800h6v6h-6z" fill="#f7df9c" />
+      </g>
+      <g className="campfire-flame campfire-flame-low">
+        <path d="M709 800h4v-14h-4v-10h5v7h5v-15h5v-13h5v19h5v14h5v12h-9v6h-21z" fill="#d57c4f" />
+        <path d="M716 800v-10h5v-11h5v10h5v12h-6v5h-9z" fill="#f1bd71" />
+        <path d="M718 800h7v6h-7z" fill="#f7df9c" />
+      </g>
+      <g className="campfire-flame campfire-flame-high">
+        <path d="M709 800h4v-19h6v-12h5v-22h5v16h5v-7h4v18h-5v13h5v13h-10v6h-19z" fill="#d57c4f" />
+        <path d="M716 800v-15h6v-15h5v20h5v10h-7v6h-9z" fill="#f1bd71" />
+        <path d="M720 797h6v9h-6z" fill="#f7df9c" />
+      </g>
+      <path className="campfire-logs" d="M710 816h28v4h-28z" fill="#815d40" />
+    </g>
+    <g className="embers" fill="#f4c77e"><rect className="campfire-ember" x="718" y="738" width="3" height="3" /><rect className="campfire-ember" x="735" y="756" width="2" height="2" /><rect className="campfire-ember" x="708" y="765" width="2" height="2" /></g>
   </svg>
 }
