@@ -11,8 +11,15 @@
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as CampfireRouteImport } from './routes/campfire'
+import { Route as SignupRouteImport } from './routes/signup'
+import { Route as ApiGuildsRouteImport } from './routes/api/guilds'
 import { Route as ApiInterestRouteImport } from './routes/api/interest'
+import { Route as GuildsIndexRouteImport } from './routes/guilds/index'
+import { Route as GuildsGuildIdRouteImport } from './routes/guilds/$guildId'
+import { Route as GuildsNewRouteImport } from './routes/guilds/new'
 import { Route as ApiAuthSplatRouteImport } from './routes/api/auth/$'
+import { Route as ApiGuildsGuildIdRouteImport } from './routes/api/guilds/$guildId'
+import { Route as GuildsGuildIdManageRouteImport } from './routes/guilds/$guildId_.manage'
 
 const IndexRoute = IndexRouteImport.update({
   id: '/',
@@ -24,9 +31,34 @@ const CampfireRoute = CampfireRouteImport.update({
   path: '/campfire',
   getParentRoute: () => rootRouteImport,
 } as any)
+const SignupRoute = SignupRouteImport.update({
+  id: '/signup',
+  path: '/signup',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ApiGuildsRoute = ApiGuildsRouteImport.update({
+  id: '/api/guilds',
+  path: '/api/guilds',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const ApiInterestRoute = ApiInterestRouteImport.update({
   id: '/api/interest',
   path: '/api/interest',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const GuildsIndexRoute = GuildsIndexRouteImport.update({
+  id: '/guilds/',
+  path: '/guilds/',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const GuildsGuildIdRoute = GuildsGuildIdRouteImport.update({
+  id: '/guilds/$guildId',
+  path: '/guilds/$guildId',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const GuildsNewRoute = GuildsNewRouteImport.update({
+  id: '/guilds/new',
+  path: '/guilds/new',
   getParentRoute: () => rootRouteImport,
 } as any)
 const ApiAuthSplatRoute = ApiAuthSplatRouteImport.update({
@@ -34,39 +66,110 @@ const ApiAuthSplatRoute = ApiAuthSplatRouteImport.update({
   path: '/api/auth/$',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ApiGuildsGuildIdRoute = ApiGuildsGuildIdRouteImport.update({
+  id: '/$guildId',
+  path: '/$guildId',
+  getParentRoute: () => ApiGuildsRoute,
+} as any)
+const GuildsGuildIdManageRoute = GuildsGuildIdManageRouteImport.update({
+  id: '/guilds/$guildId_/manage',
+  path: '/guilds/$guildId/manage',
+  getParentRoute: () => rootRouteImport,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/campfire': typeof CampfireRoute
+  '/signup': typeof SignupRoute
+  '/api/guilds': typeof ApiGuildsRouteWithChildren
   '/api/interest': typeof ApiInterestRoute
+  '/guilds/$guildId': typeof GuildsGuildIdRoute
+  '/guilds/new': typeof GuildsNewRoute
+  '/guilds/': typeof GuildsIndexRoute
   '/api/auth/$': typeof ApiAuthSplatRoute
+  '/api/guilds/$guildId': typeof ApiGuildsGuildIdRoute
+  '/guilds/$guildId/manage': typeof GuildsGuildIdManageRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/campfire': typeof CampfireRoute
+  '/signup': typeof SignupRoute
+  '/api/guilds': typeof ApiGuildsRouteWithChildren
   '/api/interest': typeof ApiInterestRoute
+  '/guilds/$guildId': typeof GuildsGuildIdRoute
+  '/guilds/new': typeof GuildsNewRoute
+  '/guilds': typeof GuildsIndexRoute
   '/api/auth/$': typeof ApiAuthSplatRoute
+  '/api/guilds/$guildId': typeof ApiGuildsGuildIdRoute
+  '/guilds/$guildId/manage': typeof GuildsGuildIdManageRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
   '/campfire': typeof CampfireRoute
+  '/signup': typeof SignupRoute
+  '/api/guilds': typeof ApiGuildsRouteWithChildren
   '/api/interest': typeof ApiInterestRoute
+  '/guilds/$guildId': typeof GuildsGuildIdRoute
+  '/guilds/new': typeof GuildsNewRoute
+  '/guilds/': typeof GuildsIndexRoute
   '/api/auth/$': typeof ApiAuthSplatRoute
+  '/api/guilds/$guildId': typeof ApiGuildsGuildIdRoute
+  '/guilds/$guildId_/manage': typeof GuildsGuildIdManageRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/' | '/campfire' | '/api/interest' | '/api/auth/$'
+  fullPaths:
+    | '/'
+    | '/campfire'
+    | '/signup'
+    | '/api/guilds'
+    | '/api/interest'
+    | '/guilds/$guildId'
+    | '/guilds/new'
+    | '/guilds/'
+    | '/api/auth/$'
+    | '/api/guilds/$guildId'
+    | '/guilds/$guildId/manage'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/campfire' | '/api/interest' | '/api/auth/$'
-  id: '__root__' | '/' | '/campfire' | '/api/interest' | '/api/auth/$'
+  to:
+    | '/'
+    | '/campfire'
+    | '/signup'
+    | '/api/guilds'
+    | '/api/interest'
+    | '/guilds/$guildId'
+    | '/guilds/new'
+    | '/guilds'
+    | '/api/auth/$'
+    | '/api/guilds/$guildId'
+    | '/guilds/$guildId/manage'
+  id:
+    | '__root__'
+    | '/'
+    | '/campfire'
+    | '/signup'
+    | '/api/guilds'
+    | '/api/interest'
+    | '/guilds/$guildId'
+    | '/guilds/new'
+    | '/guilds/'
+    | '/api/auth/$'
+    | '/api/guilds/$guildId'
+    | '/guilds/$guildId_/manage'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   CampfireRoute: typeof CampfireRoute
+  SignupRoute: typeof SignupRoute
+  ApiGuildsRoute: typeof ApiGuildsRouteWithChildren
   ApiInterestRoute: typeof ApiInterestRoute
+  GuildsGuildIdRoute: typeof GuildsGuildIdRoute
+  GuildsNewRoute: typeof GuildsNewRoute
+  GuildsIndexRoute: typeof GuildsIndexRoute
   ApiAuthSplatRoute: typeof ApiAuthSplatRoute
+  GuildsGuildIdManageRoute: typeof GuildsGuildIdManageRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -85,11 +188,46 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof CampfireRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/signup': {
+      id: '/signup'
+      path: '/signup'
+      fullPath: '/signup'
+      preLoaderRoute: typeof SignupRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/guilds': {
+      id: '/api/guilds'
+      path: '/api/guilds'
+      fullPath: '/api/guilds'
+      preLoaderRoute: typeof ApiGuildsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/api/interest': {
       id: '/api/interest'
       path: '/api/interest'
       fullPath: '/api/interest'
       preLoaderRoute: typeof ApiInterestRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/guilds/': {
+      id: '/guilds/'
+      path: '/guilds'
+      fullPath: '/guilds/'
+      preLoaderRoute: typeof GuildsIndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/guilds/$guildId': {
+      id: '/guilds/$guildId'
+      path: '/guilds/$guildId'
+      fullPath: '/guilds/$guildId'
+      preLoaderRoute: typeof GuildsGuildIdRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/guilds/new': {
+      id: '/guilds/new'
+      path: '/guilds/new'
+      fullPath: '/guilds/new'
+      preLoaderRoute: typeof GuildsNewRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/api/auth/$': {
@@ -99,14 +237,46 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiAuthSplatRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/api/guilds/$guildId': {
+      id: '/api/guilds/$guildId'
+      path: '/$guildId'
+      fullPath: '/api/guilds/$guildId'
+      preLoaderRoute: typeof ApiGuildsGuildIdRouteImport
+      parentRoute: typeof ApiGuildsRoute
+    }
+    '/guilds/$guildId_/manage': {
+      id: '/guilds/$guildId_/manage'
+      path: '/guilds/$guildId/manage'
+      fullPath: '/guilds/$guildId/manage'
+      preLoaderRoute: typeof GuildsGuildIdManageRouteImport
+      parentRoute: typeof rootRouteImport
+    }
   }
 }
+
+interface ApiGuildsRouteChildren {
+  ApiGuildsGuildIdRoute: typeof ApiGuildsGuildIdRoute
+}
+
+const ApiGuildsRouteChildren: ApiGuildsRouteChildren = {
+  ApiGuildsGuildIdRoute: ApiGuildsGuildIdRoute,
+}
+
+const ApiGuildsRouteWithChildren = ApiGuildsRoute._addFileChildren(
+  ApiGuildsRouteChildren,
+)
 
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   CampfireRoute: CampfireRoute,
+  SignupRoute: SignupRoute,
+  ApiGuildsRoute: ApiGuildsRouteWithChildren,
   ApiInterestRoute: ApiInterestRoute,
+  GuildsGuildIdRoute: GuildsGuildIdRoute,
+  GuildsNewRoute: GuildsNewRoute,
+  GuildsIndexRoute: GuildsIndexRoute,
   ApiAuthSplatRoute: ApiAuthSplatRoute,
+  GuildsGuildIdManageRoute: GuildsGuildIdManageRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)

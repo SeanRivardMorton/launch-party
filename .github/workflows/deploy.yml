@@ -3,6 +3,7 @@ name: Check and deploy
 on:
   push:
     branches: [main]
+  # Stacked PRs target feature branches and need the same checks as main PRs.
   pull_request:
 
 permissions:
