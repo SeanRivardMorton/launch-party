@@ -1,13 +1,13 @@
 @import "tailwindcss";
-@import "@fontsource-variable/pixelify-sans";
+@import "@fontsource-variable/space-grotesk";
 
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
   --color-primary: var(--accent);
   --color-border: var(--border);
-  --font-sans: "Pixelify Sans Variable", monospace;
-  --font-serif: "Pixelify Sans Variable", monospace;
+  --font-sans: "Space Grotesk Variable", system-ui, sans-serif;
+  --font-serif: "Space Grotesk Variable", system-ui, sans-serif;
 }
 
 * { box-sizing: border-box; }
