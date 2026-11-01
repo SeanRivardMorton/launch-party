@@ -3,6 +3,7 @@ import { useEffect, useState } from 'react'
 import { ArrowLeft, ArrowRight, Plus } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { WorldScene } from '@/components/world-scene'
+import { GuildNeeds } from '@/components/guild-needs'
 import { factions } from '@/lib/interest'
 import { regions, type Guild } from '@/lib/guilds'
 
@@ -53,6 +54,7 @@ function GuildDirectory() {
           <div className="guild-meta">{guild.faction} · {guild.region}</div>
           <h3>{guild.name}</h3>
           <p className="guild-description">{guild.description}</p>
+          {guild.recruitmentNeeds.length > 0 && <GuildNeeds needs={guild.recruitmentNeeds} compact />}
           <a className="button button-primary" href={guild.path}>View guild<ArrowRight size={16} /></a>
         </article> : <div className="empty-state"><p>No guilds listed{faction || region ? ' with these filters' : ' yet'}. Start the party.</p><a className="button button-outline" href="/guilds/new">List your guild<Plus size={16} /></a></div>}
       </div>

@@ -16,8 +16,10 @@ The QR code always points to **https://launchparty.thunkoid.com/signup**, includ
 - Original pixel forest, campfire and clickable characters; no external image service required.
 - Four-step, account-free mobile signup with character details, multiple roles, professions and explicit email consent. Race is a faction-dependent dropdown; class choices depend on faction and race. Roles are restricted by class: Mage, Hunter, Rogue and Warlock are DPS-only; Warrior can tank or DPS; Priest and Shaman can heal or DPS; Paladin and Druid can fill all three roles. DPS-only classes have their role selected automatically. Invalid selections reset when their prerequisites change, and the server validates the same combinations. “Undecided” is available for race/class plans and for role choices when more than one role is possible.
 - Public `/guilds` directory with faction/region filters and one listing per page. An icon in the landing header also links to the directory.
-- Two-step `/guilds/new` form publishes guild name, faction, region and description, with explicit publication consent. Forever has no selectable servers/realms. Publishing automatically generates a guild page at `/guilds/<id>` and a copyable invite link; no external invite URL is required. Retrying the same publication reuses its submission ID and page.
-- The directory links to the internal guild page. “Join this guild” opens `/signup?guild=<id>`, retains guild context, uses the guild's faction and records private joining interest after explicit consent. `guild_interest` links the signup and guild, with duplicate joining submissions producing one association. The interest signup and association are saved in one D1 batch. Listings are account-free, self-declared and public; joining interest and contact details are private. There is no guild editing, approval inbox or in-game membership integration.
+- Three-step `/guilds/new` form publishes guild name, faction, region, description and optional recruitment needs, with explicit publication consent. Forever has no selectable servers/realms. Publishing automatically generates a guild page at `/guilds/<id>` and a copyable invite link; no external invite URL is required. Retrying the same publication with its submission ID and management key reuses the page.
+- Guilds can list up to 12 role, class, profession or custom needs, with quantities and optional notes (for example, an off-tank, guild enchanter or alchemist). Quick-add presets cover supported classes, roles, primary professions and Cooking, First Aid and Fishing. These appear on the guild page, in directory summaries, and during guild-specific character/profession signup so undecided prospects can see what the crew needs.
+- New guild publication also issues a private management link at `/guilds/<id>/manage#key=…`. Creators can add, edit or remove recruitment needs later, including clearing the list as gaps are filled. The key is remembered in the creating browser when local storage is available; keep the private link for another device. Only its SHA-256 hash is stored in D1. Public APIs never return keys or management links, and editing requires the key in an Authorization header. Older listings remain readable; management links are issued only with new publication, not by knowing a public guild ID.
+- The directory links to the internal guild page. “Join this guild” opens `/signup?guild=<id>`, retains guild context, uses the guild's faction and records private joining interest after explicit consent. `guild_interest` links the signup and guild, with duplicate joining submissions producing one association. The interest signup and association are saved in one D1 batch. Listings are account-free, self-declared and public; joining interest and contact details are private. Approval inboxes and in-game membership integration remain planned.
 - Existing guild listings also have internal pages. Old external links are no longer used in the public directory or detail API. Invite links use the current origin: localhost during development, the public domain after deployment.
 - Better Auth server endpoints and D1 tables as the authentication foundation. There is deliberately no account-creation UI on the validation page.
 - Player matching, personalised image generation, Battle.net linking and guild administration are **planned**, not implemented.
@@ -61,15 +63,15 @@ pnpm exec wrangler login
 pnpm exec wrangler d1 create launch-party
 ```
 
-Replace `database_id` in `wrangler.jsonc` with the returned ID. Update `BETTER_AUTH_URL` to your deployment's origin and then run:
+Replace `database_id` in `wrangler.jsonc` with the returned ID and update `BETTER_AUTH_URL` to your deployment's origin. Deliver changes through a pull request. The GitHub Actions pipeline checks the PR, then applies production migrations and deploys after the changes reach `main`.
+
+For a fresh deployment, the authentication secret can be configured separately when explicitly requested:
 
 ```sh
-pnpm db:remote
-pnpm run deploy
 pnpm exec wrangler secret put BETTER_AUTH_SECRET
 ```
 
-Supply a fresh random secret at the prompt. `pnpm run deploy` is intentional: `pnpm deploy` is a different, built-in pnpm command.
+Supply a fresh random secret at the prompt. Use local migrations and builds for development verification; production migrations and deployment are handled by CI/CD.
 
 The compatibility date is `2026-10-30` to match the installed local Workers runtime. Do not export D1 contents or commit `.dev.vars`, tokens, local state or real signup screenshots. The database ID and deployment origin are configuration identifiers, not credentials.
 
@@ -98,7 +100,7 @@ Use Cloudflare's authenticated D1 console. For a non-identifying summary:
 pnpm exec wrangler d1 execute DB --remote --command "SELECT need, COUNT(*) AS total FROM interest GROUP BY need"
 ```
 
-The app does not expose a public signup directory or a public admin endpoint. Private guild interest is stored in `guild_interest`, referencing `guilds` and `interest`; inspect it only through the authenticated D1 console. Migration `0004_guild_interest.sql` adds this association without rewriting existing guilds or signups. Remove a requested email with a parameterised query in a private admin tool or the authenticated D1 console. No automatic mailing service is configured; follow-up is manual.
+The app does not expose a public signup directory or a public admin endpoint. Private guild interest is stored in `guild_interest`, referencing `guilds` and `interest`; inspect it only through the authenticated D1 console. Migration `0004_guild_interest.sql` adds this association without rewriting existing guilds or signups. `0005_guild_recruitment.sql` adds validated recruitment-needs JSON (defaulting to an empty list for old guilds) and a nullable management-key hash. Remove a requested email with a parameterised query in a private admin tool or the authenticated D1 console. No automatic mailing service is configured; follow-up is manual.
 
 ## Verification
 
@@ -108,6 +110,8 @@ pnpm build
 ```
 
 Browser smoke checks for the character/guild milestone cover the four signup steps, Back navigation retaining values, multiple roles, duplicate-profession validation, guild publication, directory faction filtering and refresh persistence. Viewports checked: 1440×900, 1280×720, 390×844, 320×568 and 844×390. Hosted-invite checks additionally cover automatic guild-page creation, copying the invite URL, an independent mobile browser opening the link and completing guild-specific signup, and return navigation to the guild. New form screens allow internal scrolling on smaller displays so controls remain accessible, while the document stays fixed. API checks cover validation, publication and guild-joining consent, cross-origin rejection, unknown guilds, faction mismatches, duplicate publications/signups and private email exclusion. SQLite was queried separately to confirm all character fields persisted and duplicate joining submissions produced one association. Existing listings with legacy external links were checked for compatibility with the new internal pages. Only synthetic `example.invalid` details are used for checks. These checks were run locally; they do not claim the latest milestone has been deployed.
+
+Recruitment checks cover mobile creation with role/profession gaps, quantities and notes, owner editing from a separate browser using the private link, refresh persistence, public-page updates, custom needs, removal and clearing the list. Unauthenticated/wrong-key edits, public-ID takeover attempts, cross-origin requests, invalid needs and oversized request bodies were rejected. Public responses were checked to exclude management keys. Guild-specific signup was checked to display needs before character and profession choices. Guild-page layouts were checked at desktop, mobile and landscape sizes without horizontal document overflow.
 
 The public deployment was also tested in a fresh browser without Cloudflare authentication. Production Better Auth signup, session-cookie handling, session retrieval and signout passed. Synthetic signup and authentication records were removed from production after verification. The deployed auth secret was generated and stored directly as a Cloudflare secret, without being written to this repository.
 

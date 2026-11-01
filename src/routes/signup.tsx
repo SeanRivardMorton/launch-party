@@ -4,6 +4,7 @@ import { ArrowLeft, ArrowRight, CheckCheck } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { WorldScene } from '@/components/world-scene'
+import { GuildNeeds } from '@/components/guild-needs'
 import { getRoles, needs, professions, type Role } from '@/lib/interest'
 import { factions, getClasses, getRaces, raceLabel, type CharacterClass, type Faction, type Race } from '@/lib/character-options'
 import { useGuild } from '@/lib/use-guild'
@@ -88,6 +89,7 @@ function SignupPage() {
         {guild && <p className="guild-context">Joining {guild.name} · {guild.faction} · {guild.region}</p>}
         <h2 id="signup-title">{guild && step === 3 ? 'Join the crew.' : ['Save a seat by the fire.', 'Who will you play?', 'What do you bring?', 'Find your people.'][step]}</h2>
         <p className="dialog-description">{guild && step === 3 ? 'Confirm your interest in joining this guild.' : ['Your contact details stay private.', 'Your planned character. Undecided is fine.', 'Choose every role you can fill and up to two primary professions.', 'Choose your next stop after signup.'][step]}</p>
+        {guild && guild.recruitmentNeeds.length > 0 && (step === 1 || step === 2) && <GuildNeeds needs={guild.recruitmentNeeds} />}
         <form onSubmit={submit}>
           <fieldset hidden={step !== 0} className="field-grid">
             <label>Your name or nickname<Input name="name" autoComplete="nickname" required={step === 0} maxLength={60} /></label>

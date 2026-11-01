@@ -1,5 +1,14 @@
 # Agent instructions
 
+## Delivery workflow
+
+- Deliver code changes through pull requests.
+- Let the existing GitHub Actions pipeline apply production migrations and deploy
+  to Cloudflare after changes reach `main`.
+- Do not deploy directly or run production migrations unless explicitly requested.
+- Local builds, browser checks and local database migrations are appropriate for
+  verification before raising a PR.
+
 ## Herdr orchestration
 
 Use Herdr to coordinate agent workers when a task benefits from independent,

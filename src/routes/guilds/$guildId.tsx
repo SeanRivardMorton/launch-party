@@ -2,6 +2,8 @@ import { createFileRoute } from '@tanstack/react-router'
 import { ArrowLeft, ArrowRight } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { GuildInvite } from '@/components/guild-invite'
+import { GuildNeeds } from '@/components/guild-needs'
+import { GuildManagementLink } from '@/components/guild-management-link'
 import { WorldScene } from '@/components/world-scene'
 import { useGuild } from '@/lib/use-guild'
 
@@ -19,9 +21,11 @@ function GuildPage() {
         <div className="dialog-kicker">{guild.faction} · {guild.region}</div>
         <h2 id="guild-title">{guild.name}</h2>
         <p className="guild-description guild-page-description">{guild.description}</p>
+        <GuildNeeds needs={guild.recruitmentNeeds} />
         <a className="button button-primary" href={`/signup?guild=${encodeURIComponent(guild.id)}`}>Join this guild<ArrowRight size={16} /></a>
         <p className="guild-note">Register your interest in joining this crew. Your signup details stay private.</p>
         <GuildInvite path={guild.path} />
+        <GuildManagementLink guildId={guild.id} />
       </>}
     </section>
   </main>
