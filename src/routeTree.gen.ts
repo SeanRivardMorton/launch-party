@@ -10,12 +10,18 @@
 
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as CampfireRouteImport } from './routes/campfire'
 import { Route as ApiInterestRouteImport } from './routes/api/interest'
 import { Route as ApiAuthSplatRouteImport } from './routes/api/auth/$'
 
 const IndexRoute = IndexRouteImport.update({
   id: '/',
   path: '/',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const CampfireRoute = CampfireRouteImport.update({
+  id: '/campfire',
+  path: '/campfire',
   getParentRoute: () => rootRouteImport,
 } as any)
 const ApiInterestRoute = ApiInterestRouteImport.update({
@@ -31,30 +37,34 @@ const ApiAuthSplatRoute = ApiAuthSplatRouteImport.update({
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
+  '/campfire': typeof CampfireRoute
   '/api/interest': typeof ApiInterestRoute
   '/api/auth/$': typeof ApiAuthSplatRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
+  '/campfire': typeof CampfireRoute
   '/api/interest': typeof ApiInterestRoute
   '/api/auth/$': typeof ApiAuthSplatRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
+  '/campfire': typeof CampfireRoute
   '/api/interest': typeof ApiInterestRoute
   '/api/auth/$': typeof ApiAuthSplatRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/' | '/api/interest' | '/api/auth/$'
+  fullPaths: '/' | '/campfire' | '/api/interest' | '/api/auth/$'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/api/interest' | '/api/auth/$'
-  id: '__root__' | '/' | '/api/interest' | '/api/auth/$'
+  to: '/' | '/campfire' | '/api/interest' | '/api/auth/$'
+  id: '__root__' | '/' | '/campfire' | '/api/interest' | '/api/auth/$'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
+  CampfireRoute: typeof CampfireRoute
   ApiInterestRoute: typeof ApiInterestRoute
   ApiAuthSplatRoute: typeof ApiAuthSplatRoute
 }
@@ -66,6 +76,13 @@ declare module '@tanstack/react-router' {
       path: '/'
       fullPath: '/'
       preLoaderRoute: typeof IndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/campfire': {
+      id: '/campfire'
+      path: '/campfire'
+      fullPath: '/campfire'
+      preLoaderRoute: typeof CampfireRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/api/interest': {
@@ -87,6 +104,7 @@ declare module '@tanstack/react-router' {
 
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
+  CampfireRoute: CampfireRoute,
   ApiInterestRoute: ApiInterestRoute,
   ApiAuthSplatRoute: ApiAuthSplatRoute,
 }

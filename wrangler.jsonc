@@ -1,7 +1,7 @@
 {
   "$schema": "node_modules/wrangler/config-schema.json",
   "name": "launch-party",
-  "main": "@tanstack/react-start/server-entry",
+  "main": "src/worker.ts",
   "compatibility_date": "2026-10-30",
   "compatibility_flags": ["nodejs_compat"],
   "workers_dev": false,
@@ -10,6 +10,12 @@
   "vars": {
     "BETTER_AUTH_URL": "https://launchparty.thunkoid.com"
   },
+  "durable_objects": { "bindings": [
+    { "name": "GUILD_CAMPFIRES", "class_name": "GuildCampfire" },
+    { "name": "AVATAR_JOBS", "class_name": "AvatarGeneration" }
+  ] },
+  "migrations": [{ "tag": "campfire-v1", "new_sqlite_classes": ["GuildCampfire", "AvatarGeneration"] }],
+  "r2_buckets": [{ "binding": "AVATAR_BUCKET", "bucket_name": "launch-party-avatars" }],
   "d1_databases": [
     {
       "binding": "DB",
