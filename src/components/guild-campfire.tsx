@@ -3,6 +3,7 @@ import { PixelCharacter } from './pixel-character'
 import { emotes, position, WORLD, type Card, type ClientMessage, type Peer, type ServerMessage } from '@/lib/campfire/protocol'
 import { authClient } from '@/lib/auth-client'
 import { SpriteSheet } from './sprite-sheet'
+import { GuildCardBattleTag } from './battletag'
 import './guild-campfire.css'
 
 type Me = { profile: (Card & { published: boolean }) | null; guilds: string[]; avatar: { state: string; attempts: number; progress?: number; total_steps?: number; error_code?: string; previewAvailable?: boolean }; generationEnabled: boolean }
@@ -144,8 +145,8 @@ function Scene({ guildId, avatarRevision }: { guildId: string; avatarRevision: s
       {!connected && <div className="guild-offline">{status}</div>}
     </div>
     <div className="guild-controls"><span>Tap the clearing to move · arrows work too</span><div>{emotes.map(emote => <button key={emote} disabled={!connected} onClick={() => send({ type: 'emote', emote })}>{symbols[emote]} {emote}</button>)}</div></div>
-    <dialog ref={dialog} className="guild-card" onClick={event => { if (event.target === event.currentTarget) dialog.current?.close() }}>
-      {selected && <article><h2>{selected.nickname}</h2><p>{selected.faction} · {selected.race} {selected.characterClass}</p><p>{selected.professions.join(' · ') || 'Professions undecided'}</p><p>{selected.bio}</p><small>Published character plan · self-declared</small><button autoFocus onClick={() => dialog.current?.close()}>Close card</button></article>}
+    <dialog ref={dialog} className="guild-card" onClose={() => setSelected(null)} onClick={event => { if (event.target === event.currentTarget) dialog.current?.close() }}>
+      {selected && <article><h2>{selected.nickname}</h2><p>{selected.faction} · {selected.race} {selected.characterClass}</p><p>{selected.professions.join(' · ') || 'Professions undecided'}</p><p>{selected.bio}</p><small>Published character plan · self-declared</small><GuildCardBattleTag key={`${guildId}:${selected.id}`} guildId={guildId} userId={selected.id} /><button autoFocus onClick={() => { dialog.current?.close(); setSelected(null) }}>Close card</button></article>}
     </dialog>
   </>
 }

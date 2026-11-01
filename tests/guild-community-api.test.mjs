@@ -96,6 +96,31 @@ test('guild leadership, officer approvals, private roster, initiatives and owner
       assert.equal((await action(member, id, { action: 'update-profile', profile: profile('Updated Synthetic Mage') })).status, 200)
       assert.equal((await community(lead, id)).members.find(person => person.userId === member.id).nickname, 'Updated Synthetic Mage')
     })
+    await t.test('BattleTags are self-editable and shared only with approved guildmates', async () => {
+      const path = `/api/guilds/${id}/battletags/${member.id}`
+      assert.equal((await fetch(`${base}${path}`)).status, 401)
+      assert.equal((await action(lead, id, { action: 'update-battletag', battleTag: 'Leader#1234' })).status, 200)
+      assert.equal((await action(member, id, { action: 'update-battletag', battleTag: '  PlayerName#123456  ', userId: lead.id })).status, 200)
+      assert.equal((await (await lead.request(path)).json()).battleTag, 'PlayerName#123456')
+      const roster = await community(lead, id)
+      assert.equal(roster.members.find(person => person.userId === member.id).battleTag, 'PlayerName#123456')
+      assert.equal(roster.members.find(person => person.userId === lead.id).battleTag, 'Leader#1234')
+      assert.equal((await member.request(path)).headers.get('cache-control'), 'no-store')
+      assert.equal((await outsider.request(path)).status, 403)
+      assert.equal((await action(outsider, id, { action: 'update-battletag', battleTag: 'Outsider#1234' })).status, 403)
+      assert.equal((await action(outsider, id, { action: 'apply', profile: profile() })).status, 200)
+      assert.equal((await outsider.request(path)).status, 403)
+      assert(!JSON.stringify(await community(outsider, id)).includes('PlayerName#123456'))
+      assert(!JSON.stringify(await (await fetch(`${base}/api/guilds/${id}`)).json()).includes('PlayerName#123456'))
+      assert(!JSON.stringify(await (await fetch(`${base}/api/guilds`)).json()).includes('PlayerName#123456'))
+      for (const battleTag of ['NoDiscriminator', 'Player#12', 'Has Spaces#1234', '<script>#1234', 'x'.repeat(65)]) {
+        assert.equal((await action(member, id, { action: 'update-battletag', battleTag })).status, 400)
+      }
+      assert.equal((await action(member, id, { action: 'update-battletag', battleTag: '' })).status, 200)
+      assert.equal((await (await lead.request(path)).json()).battleTag, '')
+      assert.equal((await action(member, id, { action: 'update-battletag', battleTag: 'PlayerName#123456' })).status, 200)
+      assert.equal((await action(member, id, { action: 'update-battletag', battleTag: 'Changed#1234' }, { origin: 'https://other.invalid' })).status, 403)
+    })
     await t.test('only lead appoints officers; officers manage initiatives and needs', async () => {
       assert.equal((await action(officer, id, { action: 'apply', profile: profile('Synthetic Officer Mage') })).status, 200)
       assert.equal((await action(lead, id, { action: 'approve', userId: officer.id })).status, 200)
@@ -132,6 +157,7 @@ test('guild leadership, officer approvals, private roster, initiatives and owner
       assert.equal(removed.viewer.role, null)
       assert.deepEqual(removed.members, [])
       assert.deepEqual(removed.initiatives, [])
+      assert.equal((await outsider.request(`/api/guilds/${id}/battletags/${member.id}`)).status, 403)
       assert.equal((await action(officer, id, { action: 'remove-member', userId: officer.id })).status, 403)
     })
     await t.test('roster pagination exposes all approved members, not applicants', async () => {
@@ -169,6 +195,8 @@ test('guild leadership, officer approvals, private roster, initiatives and owner
       assert.equal((await action(member, legacyId, { action: 'claim', managementKey: '0'.repeat(64) })).status, 403)
       assert.equal((await action(outsider, legacyId, { action: 'claim', managementKey: key })).status, 200)
       assert.equal((await community(outsider, legacyId)).viewer.role, 'leader')
+      assert.equal((await outsider.request(`/api/guilds/${id}/battletags/${member.id}`)).status, 403)
+      assert.equal((await outsider.request(`/api/guilds/${legacyId}/battletags/${member.id}`)).status, 403)
       assert.equal((await action(member, legacyId, { action: 'claim', managementKey: key })).status, 403)
       const anonymousKeyEdit = await fetch(`${base}/api/guilds/${legacyId}`, { method: 'PATCH', headers: { origin: base, 'content-type': 'application/json', authorization: `Bearer ${key}` }, body: JSON.stringify({ recruitmentNeeds: [] }) })
       assert.equal(anonymousKeyEdit.status, 401)
