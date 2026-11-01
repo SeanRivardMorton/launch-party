@@ -1,18 +1,19 @@
 @import "tailwindcss";
+@import "@fontsource-variable/pixelify-sans";
 
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
   --color-primary: var(--accent);
   --color-border: var(--border);
-  --font-sans: "Trebuchet MS", Arial, sans-serif;
-  --font-serif: Georgia, "Times New Roman", serif;
+  --font-sans: "Pixelify Sans Variable", monospace;
+  --font-serif: "Pixelify Sans Variable", monospace;
 }
 
 * { box-sizing: border-box; }
 html, body { width: 100%; height: 100%; margin: 0; overflow: hidden; overscroll-behavior: none; }
 body { background: #081c24; }
-button, input, select { font: inherit; }
+button, input, select, textarea { font: inherit; }
 button, a { -webkit-tap-highlight-color: transparent; touch-action: manipulation; }
 button { cursor: pointer; }
 a { color: inherit; text-decoration: none; }

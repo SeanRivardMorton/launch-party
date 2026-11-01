@@ -3,6 +3,7 @@ import { useRef, useState, type FormEvent } from 'react'
 import { ArrowLeft, ArrowRight, CheckCheck } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
+import { Select } from '@/components/ui/select'
 import { WorldScene } from '@/components/world-scene'
 import { GuildInvite } from '@/components/guild-invite'
 import { GuildNeedsEditor } from '@/components/guild-needs-editor'
@@ -60,7 +61,7 @@ function ListGuild() {
         <form onSubmit={submit}>
           <fieldset hidden={step !== 0} className="field-grid">
             <label>Guild name<Input name="name" required={step === 0} minLength={2} maxLength={80} /></label>
-            <div className="directory-filters"><label>Faction<select name="faction">{factions.map(value => <option key={value}>{value}</option>)}</select></label><label>Region<select name="region">{regions.map(value => <option key={value}>{value}</option>)}</select></label></div>
+            <div className="directory-filters"><label>Faction<Select name="faction">{factions.map(value => <option key={value}>{value}</option>)}</Select></label><label>Region<Select name="region">{regions.map(value => <option key={value}>{value}</option>)}</Select></label></div>
           </fieldset>
           <fieldset hidden={step !== 1} className="field-grid">
             <label>About your guild<textarea className="input" name="description" rows={4} required={step === 1} minLength={10} maxLength={600} placeholder="Play style, usual times, roles you’re recruiting…" /></label>
