@@ -13,17 +13,18 @@
     "cf-typegen": "wrangler types"
   },
   "dependencies": {
+    "@radix-ui/react-slot": "latest",
     "@tanstack/react-router": "latest",
     "@tanstack/react-start": "latest",
     "better-auth": "latest",
-    "drizzle-orm": "latest",
-    "clsx": "^2.1.1",
     "class-variance-authority": "^0.7.1",
-    "tailwind-merge": "latest",
+    "clsx": "^2.1.1",
+    "drizzle-orm": "latest",
     "lucide-react": "latest",
-    "@radix-ui/react-slot": "latest",
+    "qrcode.react": "^4.2.0",
     "react": "^19.2.0",
     "react-dom": "^19.2.0",
+    "tailwind-merge": "latest",
     "zod": "^4.0.0"
   },
   "devDependencies": {

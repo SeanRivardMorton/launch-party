@@ -32,13 +32,20 @@ export const Route = createFileRoute('/api/interest')({
       return Response.json({ error: 'Please check your submission.' }, { status: 400 })
     }
     const parsed = interestSchema.safeParse(body)
-    if (!parsed.success) return Response.json({ error: 'Please check your name, email, role and consent.' }, { status: 400 })
+    if (!parsed.success) return Response.json({ error: 'Please check your contact details, character, roles, professions and consent.' }, { status: 400 })
     if (parsed.data.website) return Response.json({ success: true })
-    const { email, name, role, need, feedback } = parsed.data
+    const { email, name, need, feedback, faction, race, characterClass, fulfilledRoles, professions, guildIntent, guildId } = parsed.data
     try {
+      if (guildId) {
+        const guild = await env.DB.prepare('SELECT faction FROM guilds WHERE id = ?').bind(guildId).first<{ faction: string }>()
+        if (!guild) return Response.json({ error: 'This guild is no longer available. Please choose another guild.' }, { status: 404 })
+        if (guild.faction !== faction) return Response.json({ error: 'Choose a character in this guild’s faction.' }, { status: 400 })
+      }
       // A repeated signup does not overwrite someone's original feedback or reveal membership.
-      await env.DB.prepare('INSERT INTO interest (id, email, name, role, need, feedback, consent_at) VALUES (?, ?, ?, ?, ?, ?, ?) ON CONFLICT(email) DO NOTHING')
-        .bind(crypto.randomUUID(), email, name, role, need, feedback, new Date().toISOString()).run()
+      const statements = [env.DB.prepare('INSERT INTO interest (id, email, name, role, need, feedback, consent_at, faction, race, character_class, fulfilled_roles, professions, guild_intent) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?) ON CONFLICT(email) DO NOTHING')
+        .bind(crypto.randomUUID(), email, name, fulfilledRoles[0], need, feedback, new Date().toISOString(), faction, race, characterClass, JSON.stringify(fulfilledRoles), JSON.stringify(professions), guildIntent)]
+      if (guildId) statements.push(env.DB.prepare('INSERT INTO guild_interest (guild_id, interest_id) SELECT ?, id FROM interest WHERE email = ? ON CONFLICT(guild_id, interest_id) DO NOTHING').bind(guildId, email))
+      await env.DB.batch(statements)
       return Response.json({ success: true }, { headers: { 'Cache-Control': 'no-store' } })
     } catch {
       return Response.json({ error: 'The quest board is temporarily unavailable. Please try again in a moment.' }, { status: 503 })
