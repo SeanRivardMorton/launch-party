@@ -176,11 +176,14 @@ function ProfileEditor({ initial, onSave }: { initial: Me['profile']; onSave: ()
 export function GuildCampfireScreen() {
   const [me, setMe] = useState<Me | null>(null)
   const [error, setError] = useState('')
-  const [editing, setEditing] = useState(false)
+  const [editing, setEditing] = useState(() => typeof window !== 'undefined' && new URLSearchParams(window.location.search).get('edit') === '1')
   const [guild, setGuild] = useState('')
   const { theme, preference, choose, style, ready } = useSceneTheme(me?.profile?.race ?? null)
   const [generationBusy, setGenerationBusy] = useState(false)
-  const refresh = async () => { try { const data = await api<Me>('me'); setMe(data); setGuild(previous => data.guilds.includes(previous) ? previous : data.guilds[0] || ''); setError('') } catch (e) { setError((e as Error).message) } }
+  const refresh = async () => { try { const data = await api<Me>('me'); setMe(data); setGuild(previous => {
+    const requested = new URLSearchParams(window.location.search).get('guild') || ''
+    return data.guilds.includes(previous) ? previous : requested ? data.guilds.includes(requested) ? requested : '' : data.guilds[0] || ''
+  }); setError('') } catch (e) { setError((e as Error).message) } }
   useEffect(() => { void refresh() }, [])
   useEffect(() => {
     if (me?.avatar.state !== 'pending') return

@@ -9,6 +9,7 @@
     "test": "vitest run",
     "test:browser": "playwright test",
     "test:auth": "node scripts/test-auth.mjs",
+    "test:account": "node scripts/test-account-overview.mjs",
     "test:guilds": "node --test tests/guild-community-api.test.mjs",
     "preview": "vite preview --port 3000",
     "deploy": "pnpm build && wrangler deploy",

@@ -23,7 +23,7 @@ async function login(target = '/login', secret = password) {
 }
 async function signout() {
   await page.goto('/account')
-  await visible(page.getByRole('link', { name: 'My account', exact: true }))
+  await visible(page.getByRole('button', { name: 'My account', exact: false }))
   await page.getByRole('button', { name: 'Sign out', exact: true }).click()
   await page.waitForURL(url => url.pathname === '/login')
 }
@@ -91,7 +91,7 @@ try {
     await page.reload()
     assert.equal(await page.getByLabel('Name or nickname', { exact: true }).inputValue(), 'Saved synthetic nickname')
     await page.goto('/')
-    await visible(page.getByRole('link', { name: 'My account', exact: true }))
+    await visible(page.getByRole('button', { name: 'My account', exact: false }))
     assert.equal(await page.locator('.signup-qr').getAttribute('href'), '/signup')
     console.log('PASS registration, client/server password minimum, pending state, cookie session, reload, private DTO, account update, header and QR')
 
@@ -160,7 +160,7 @@ try {
     await page.setViewportSize({ width: 390, height: 844 })
     await login()
     await page.waitForURL('**/account')
-    await visible(page.getByRole('link', { name: 'My account', exact: true }))
+    await visible(page.getByRole('button', { name: 'My account', exact: false }))
     await page.screenshot({ path: 'test-results/auth-account-mobile.png' })
     await signout()
     console.log('PASS desktop/mobile/landscape layout with reachable controls and no horizontal clipping')
@@ -190,16 +190,25 @@ try {
       headers: { Origin: origin },
       data: { name: 'Synthetic auth regression guild', faction: 'Alliance', region: 'Europe', description: 'Synthetic local guild for account-free invite regression.', publishConsent: true },
     })
-    assert.equal(listing.status(), 200)
-    const { path } = await listing.json()
+    assert.equal(listing.status(), 401, 'Guild publication now requires a real account')
+    await login()
+    await page.waitForURL('**/account')
+    const authenticatedListing = await context.request.post('/api/guilds', {
+      headers: { Origin: origin },
+      data: { name: 'Synthetic auth regression guild', faction: 'Alliance', region: 'Europe', description: 'Synthetic local guild for public directory and invite regression.', publishConsent: true },
+    })
+    assert.equal(authenticatedListing.status(), 200)
+    const { path } = await authenticatedListing.json()
     await publicPage.goto(path)
-    await visible(publicPage.getByRole('link', { name: /Join this guild/ }))
-    await publicPage.getByRole('link', { name: /Join this guild/ }).click()
+    await visible(publicPage.getByRole('link', { name: /Apply to join/ }))
+    await publicPage.getByRole('link', { name: /Apply to join/ }).click()
+    await visible(publicPage.getByRole('button', { name: 'Sign in', exact: true }))
+    await publicPage.goto(`/signup?guild=${encodeURIComponent(path.split('/').pop())}`)
     await visible(publicPage.locator('.guild-context').filter({ hasText: 'Joining Synthetic auth regression guild' }))
     assert(new URL(publicPage.url()).searchParams.has('guild'))
     assert.equal(await (await publicContext.request.get('/api/auth/get-session')).json(), null)
     await publicContext.close()
-    console.log('PASS anonymous /signup completion, guild publication/directory/invite regression; no account session created')
+    console.log('PASS anonymous /signup, authenticated-only guild publication, public directory/application gate and guild-context interest; no anonymous session created')
   }
   assert.deepEqual(errors, [], 'No uncaught browser errors')
 } catch (error) {
