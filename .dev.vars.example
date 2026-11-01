@@ -1,0 +1,3 @@
+# Copy to .dev.vars (gitignored). Generate a fresh secret; never use this placeholder.
+BETTER_AUTH_SECRET=replace-with-at-least-32-random-characters
+BETTER_AUTH_URL=http://localhost:3000

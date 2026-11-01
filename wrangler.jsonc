@@ -1,0 +1,21 @@
+{
+  "$schema": "node_modules/wrangler/config-schema.json",
+  "name": "launch-party",
+  "main": "@tanstack/react-start/server-entry",
+  "compatibility_date": "2026-10-30",
+  "compatibility_flags": ["nodejs_compat"],
+  "workers_dev": false,
+  "preview_urls": false,
+  "routes": [{ "pattern": "launchparty.thunkoid.com", "custom_domain": true }],
+  "vars": {
+    "BETTER_AUTH_URL": "https://launchparty.thunkoid.com"
+  },
+  "d1_databases": [
+    {
+      "binding": "DB",
+      "database_name": "launch-party",
+      "database_id": "d791ce27-a095-490a-96f4-93ee74c5f9a3",
+      "migrations_dir": "migrations"
+    }
+  ]
+}

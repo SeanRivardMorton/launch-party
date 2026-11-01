@@ -1,0 +1,12 @@
+node_modules/
+dist/
+.tanstack/
+.wrangler/
+.output/
+.dev.vars
+.env
+.env.*
+!.env.example
+*.local
+playwright-report/
+test-results/
