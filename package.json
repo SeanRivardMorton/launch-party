@@ -13,6 +13,8 @@
     "cf-typegen": "wrangler types"
   },
   "dependencies": {
+    "@fontsource-variable/pixelify-sans": "^5.3.0",
+    "@radix-ui/react-select": "^2.4.1",
     "@radix-ui/react-slot": "latest",
     "@tanstack/react-router": "latest",
     "@tanstack/react-start": "latest",

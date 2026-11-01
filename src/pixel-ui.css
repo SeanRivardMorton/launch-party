@@ -1,0 +1,204 @@
+/* Shared RPG-menu surfaces. Keep the scene palette as the source of truth. */
+.site {
+  --font-pixel: "Pixelify Sans Variable", monospace;
+  --panel: color-mix(in srgb, var(--background) 94%, var(--foreground));
+  --panel-inset: color-mix(in srgb, var(--background) 80%, #000);
+  --frame-light: color-mix(in srgb, var(--border) 65%, var(--foreground));
+  --frame-dark: color-mix(in srgb, var(--background) 55%, #000);
+  font-family: var(--font-pixel);
+  font-size: 16px;
+  line-height: 1.5;
+  color-scheme: dark;
+}
+
+.site :is(.brand, .brand-rune, h1, h2, h3, .character-name, .character-speech,
+  .cta-note, .footer-right, .needs-editor > legend) {
+  font-family: var(--font-pixel);
+  font-style: normal;
+  letter-spacing: 0;
+}
+
+.site :is(.event-label, .eyebrow, .early-access, .party-caption, .site-footer,
+  .dialog-kicker, .character-name > span, .guild-meta, .need-quantity,
+  .need-category, .need-edit-heading, .directory-pagination > span) {
+  font-family: var(--font-pixel);
+  font-size: 12px;
+  letter-spacing: .06em;
+}
+
+.site :is(.signup-card, .signup-dialog) {
+  background: var(--panel);
+  border: 2px solid var(--frame-light);
+  border-radius: 0;
+  box-shadow: inset 3px 3px 0 #ffffff0d, inset -3px -3px 0 #0004,
+    0 0 0 2px var(--frame-dark), 6px 6px 0 2px #0006;
+}
+
+.signup-page { padding-block: clamp(24px, 5vh, 48px); }
+.signup-card { width: min(540px, 100%); }
+.signup-card::before, .dialog-body::before {
+  content: "";
+  display: block;
+  width: 32px;
+  height: 4px;
+  margin-bottom: 20px;
+  background: var(--accent);
+  box-shadow: 8px 4px 0 color-mix(in srgb, var(--accent) 40%, transparent);
+}
+.site :is(.signup-card h2, .signup-dialog h2) { font-size: clamp(28px, 6vw, 36px); line-height: 1.15; }
+.site .guild-card h3 { font-size: 28px; }
+.site :is(.guild-needs h3, .needs-editor > legend) { font-size: 24px; }
+.site .guild-needs-compact h3 { font-size: 20px; }
+.dialog-kicker { margin-bottom: 16px; }
+.step-count { color: var(--accent); }
+.dialog-description { font-size: 16px; line-height: 1.5; }
+.site :is(.field-grid label, .directory-filters label, .guild-invite label,
+  .need-edit-row label, .choice-field legend, .needs-option-group > legend) { font-size: 15px; }
+
+.site :is(.input, select, .pixel-select-trigger) {
+  min-height: 46px;
+  padding: 10px 12px;
+  background: var(--panel-inset);
+  border: 2px solid var(--border);
+  border-radius: 0;
+  box-shadow: inset 2px 2px 0 #0005, 0 1px 0 #ffffff0a;
+  color: var(--foreground);
+  font: 16px/1.4 var(--font-pixel);
+  caret-color: var(--accent);
+}
+.site select:not([multiple]) {
+  appearance: none;
+  padding-right: 36px;
+  /* Three square steps form a pixel chevron without a smoothed icon. */
+  background-image: linear-gradient(var(--accent), var(--accent)),
+    linear-gradient(var(--accent), var(--accent)), linear-gradient(var(--accent), var(--accent));
+  background-size: 4px 4px;
+  background-position: calc(100% - 22px) 50%, calc(100% - 18px) calc(50% + 4px), calc(100% - 14px) 50%;
+  background-repeat: no-repeat;
+}
+.site select option { background: var(--background); color: var(--foreground); }
+.site .input::placeholder { color: var(--muted); opacity: .8; }
+.site :is(.input, select):hover:not(:disabled) { border-color: var(--frame-light); }
+.site :is(.input, select):focus-visible { border-color: var(--accent); outline-offset: 3px; }
+.site :is(input, select, textarea):disabled { opacity: .55; cursor: not-allowed; }
+.site .input[readonly] { color: var(--accent); }
+
+.site .pixel-select-trigger {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  width: 100%;
+  margin-top: 7px;
+  text-align: left;
+}
+.pixel-select-trigger > span:first-child { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.site .pixel-select-trigger:hover:not(:disabled) { border-color: var(--frame-light); }
+.site .pixel-select-trigger[data-state="open"] { border-color: var(--accent); }
+.site .pixel-select-trigger:disabled { opacity: .55; cursor: not-allowed; }
+.pixel-select-arrow { width: 4px; height: 4px; margin: 0 6px 4px; flex-shrink: 0; background: var(--accent); box-shadow: -4px -4px 0 var(--accent), 4px -4px 0 var(--accent); }
+.pixel-select-arrow > svg { display: none; }
+.pixel-select-trigger[data-state="open"] .pixel-select-arrow { rotate: 180deg; }
+.site .pixel-select-menu {
+  z-index: 20;
+  min-width: var(--radix-select-trigger-width);
+  max-width: calc(100vw - 24px);
+  max-height: min(320px, var(--radix-select-content-available-height));
+  overflow: hidden;
+  border: 2px solid var(--frame-light);
+  border-radius: 0;
+  background: var(--panel);
+  color: var(--foreground);
+  box-shadow: inset 2px 2px 0 #ffffff0d, 4px 4px 0 var(--frame-dark);
+  font: 16px/1.4 var(--font-pixel);
+}
+.pixel-select-options { padding: 4px; }
+.pixel-select-option { position: relative; display: flex; align-items: center; min-height: 40px; padding: 8px 32px 8px 12px; outline: none; cursor: pointer; user-select: none; overflow-wrap: anywhere; }
+.pixel-select-option[data-state="checked"] { color: var(--accent); }
+.pixel-select-option[data-highlighted] { background: var(--accent); color: var(--background); box-shadow: inset 2px 2px 0 #ffffff20, inset -2px -2px 0 #0002; }
+.pixel-select-option[data-disabled] { opacity: .45; cursor: not-allowed; }
+.pixel-select-indicator { position: absolute; right: 10px; font-size: 10px; }
+.pixel-select-scroll { display: flex; justify-content: center; align-items: center; height: 24px; background: var(--panel); color: var(--accent); font-size: 12px; }
+
+.site .button {
+  min-height: 44px;
+  gap: 12px;
+  border: 2px solid var(--border);
+  border-radius: 0;
+  font: 600 16px/1.25 var(--font-pixel);
+  box-shadow: inset 2px 2px 0 #ffffff1a, inset -2px -2px 0 #0003, 3px 3px 0 var(--frame-dark);
+  transition: background-color .1s, border-color .1s;
+}
+.site .button-primary { background: var(--accent); border-color: var(--accent); color: var(--background); }
+.site .button-primary:hover:not(:disabled) { background: color-mix(in srgb, var(--accent) 85%, white); filter: none; }
+.site .button-outline { background: var(--panel); }
+.site .button-outline:hover:not(:disabled) { border-color: var(--accent); color: var(--accent); }
+.site .button-ghost { border-color: transparent; box-shadow: none; }
+.site .button-ghost:hover:not(:disabled) { background: #ffffff0a; color: var(--accent); }
+.site .button:active:not(:disabled), .site a.button:active { translate: 2px 2px; box-shadow: inset 2px 2px 0 #0002; }
+.site .button-sm { min-width: 40px; min-height: 40px; padding: 8px; }
+.site :is(.dialog-close, .remove-need) { border-radius: 0; width: 40px; height: 40px; }
+.site :is(button, a, input, select, textarea):focus-visible { outline: 2px solid var(--accent); outline-offset: 4px; }
+
+.site :is(.check-choice, .guild-card, .guild-needs, .need-edit-row) {
+  border: 2px solid var(--border);
+  border-radius: 0;
+  background: var(--panel-inset);
+  box-shadow: inset 2px 2px 0 #ffffff05;
+}
+.check-choice { min-height: 46px; cursor: pointer; }
+.check-choice:hover { border-color: var(--frame-light); }
+.check-choice:has(input:checked) { border-color: var(--accent); background: color-mix(in srgb, var(--accent) 10%, var(--background)); }
+.check-choice:has(input:focus-visible) { outline: 2px solid var(--accent); outline-offset: 3px; }
+.site :is(.check-choice, .consent) input {
+  appearance: none;
+  display: grid;
+  place-content: center;
+  width: 18px;
+  height: 18px;
+  border: 2px solid var(--border);
+  border-radius: 0;
+  background: var(--panel-inset);
+  color: var(--accent);
+  cursor: pointer;
+}
+.site :is(.check-choice, .consent) input:checked { border-color: var(--accent); }
+.site :is(.check-choice, .consent) input:disabled { cursor: not-allowed; }
+.site :is(.check-choice, .consent) input:checked::before { content: ""; width: 8px; height: 8px; background: currentColor; }
+.site .check-choice input[type="radio"]:checked::before { width: 6px; height: 6px; box-shadow: 0 -2px 0 currentColor, 0 2px 0 currentColor, -2px 0 0 currentColor, 2px 0 0 currentColor; }
+.site .consent { font-size: 14px; }
+.site :is(.field-hint, .guild-note, .need-notes, .form-note, .need-category) { font-size: 13px; }
+.site :is(.guild-description, .empty-state, .success-state p, .need-summary) { font-size: 16px; }
+.site :is(.guild-nav, .directory-signup, .guild-context, .recruitment-saved, .form-error) { font-size: 14px; }
+.site .need-quantity { font-size: 16px; }
+.site .success-icon { border: 2px solid var(--accent); border-radius: 0; background: var(--panel-inset); box-shadow: 4px 4px 0 var(--frame-dark); }
+
+.site .character-speech {
+  white-space: normal;
+  width: max-content;
+  max-width: min(240px, 70vw);
+  padding: 10px 14px;
+  border: 2px solid var(--frame-light);
+  border-radius: 0;
+  background: var(--panel);
+  box-shadow: 4px 4px 0 var(--frame-dark);
+  font-size: 16px;
+  line-height: 1.4;
+}
+.site .character-speech::after { bottom: -6px; width: 8px; height: 8px; border: 0; transform: none; background: var(--panel); box-shadow: 2px 2px 0 var(--frame-light); }
+.signup-dialog::backdrop { background: #041218cc; backdrop-filter: none; }
+.site .status-dot, .site .signup-qr { border-radius: 0; }
+.site .signup-qr { box-shadow: 0 0 0 2px var(--border), 6px 6px 0 #0006; }
+
+@media (max-width: 520px) {
+  .signup-card { padding: 24px 20px; }
+  .role-choices { grid-template-columns: 1fr; }
+  .site .character-speech { font-size: 14px; }
+  .site .button { padding-inline: 14px; }
+}
+
+@media (forced-colors: active) {
+  .site :is(.check-choice, .consent) input { appearance: auto; }
+  .site :is(.check-choice, .consent) input::before { display: none; }
+  .site select:not([multiple]) { appearance: auto; background-image: none; }
+}
