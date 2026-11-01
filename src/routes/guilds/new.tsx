@@ -10,6 +10,7 @@ import { GuildNeedsEditor } from '@/components/guild-needs-editor'
 import { factions } from '@/lib/interest'
 import { regions, type RecruitmentNeed } from '@/lib/guilds'
 import { createManagementKey, saveGuildManagementKey } from '@/lib/guild-management'
+import { GuildAuthGate } from '@/components/guild-account-panel'
 
 export const Route = createFileRoute('/guilds/new')({ component: ListGuild })
 
@@ -18,7 +19,6 @@ function ListGuild() {
   const [status, setStatus] = useState<'idle' | 'sending' | 'success' | 'error'>('idle')
   const [error, setError] = useState('')
   const [path, setPath] = useState('')
-  const [managementPath, setManagementPath] = useState('')
   const [needs, setNeeds] = useState<RecruitmentNeed[]>([])
   const submissionId = useRef<string | null>(null)
   const managementKey = useRef<string | null>(null)
@@ -40,7 +40,6 @@ function ListGuild() {
       if (!response.ok || !result.success || !result.path) throw new Error(result.error || 'Couldn’t publish your guild. Please try again.')
       setPath(result.path)
       if (result.managementPath) {
-        setManagementPath(result.managementPath)
         saveGuildManagementKey(submissionId.current, managementKey.current)
       }
       setStatus('success')
@@ -50,10 +49,10 @@ function ListGuild() {
     }
   }
 
-  return <main className="site signup-page" data-theme="moonwell">
+  return <GuildAuthGate title="Sign in to lead a guild"><main className="site signup-page" data-theme="moonwell">
     <WorldScene />
     <section className="signup-card" aria-labelledby="list-guild-title">
-      {status === 'success' ? <div className="success-state"><span className="success-icon"><CheckCheck size={30} /></span><h2 id="list-guild-title">Your party is forming.</h2><p>Your guild now has its own Launchparty page. Share your invite link so people can learn about your crew and register interest in joining.</p><GuildInvite path={path} />{managementPath && <GuildInvite path={managementPath} label="Private management link" buttonText="Copy management link" description="Keep this private link for updating your guild’s recruitment needs." />}<a className="button button-primary" href={path}>View my guild<ArrowRight size={16} /></a></div> : <>
+      {status === 'success' ? <div className="success-state"><span className="success-icon"><CheckCheck size={30} /></span><h2 id="list-guild-title">Your party is forming.</h2><p>Your guild now has its own Launchparty page. Share your invite link so people can learn about your crew and apply to join.</p><GuildInvite path={path} /><p>Your account is the guild lead. Open the guild hall to review applicants, appoint officers and manage plans.</p><a className="button button-primary" href={`${path}/manage`}>Open guild hall<ArrowRight size={16} /></a><a className="directory-signup" href={path}>View my guild<ArrowRight size={14} /></a></div> : <>
         <nav className="guild-nav"><a href="/guilds"><ArrowLeft size={16} />Guild directory</a></nav>
         <div className="dialog-kicker">LIST YOUR GUILD <span className="step-count">{step + 1} / 3</span></div>
         <h2 id="list-guild-title">{['Make room at the fire.', 'Invite your next crew.', 'What’s your party missing?'][step]}</h2>
@@ -68,7 +67,8 @@ function ListGuild() {
           </fieldset>
           <fieldset hidden={step !== 2}>
             <GuildNeedsEditor needs={needs} onChange={setNeeds} disabled={step !== 2 || status === 'sending'} />
-            <p className="field-hint">Your invite and private management links are generated when you publish.</p>
+            <p className="field-hint">Your invite link and authenticated guild hall are created when you publish.</p>
+            <p className="field-hint">You’ll become this guild’s lead and can appoint officers from the guild hall.</p>
             <label className="consent"><input name="publishConsent" type="checkbox" required={step === 2} /><span>I’m authorised to list this guild. Publish these guild details and recruitment needs on a public Launchparty page.</span></label>
           </fieldset>
           <div className="honeypot" aria-hidden="true"><label>Leave empty<Input name="website" tabIndex={-1} autoComplete="off" /></label></div>
@@ -77,5 +77,5 @@ function ListGuild() {
         </form>
       </>}
     </section>
-  </main>
+  </main></GuildAuthGate>
 }

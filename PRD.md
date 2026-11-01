@@ -23,6 +23,8 @@ Implemented locally: four-step private interest signup, additive migrations `000
 
 **Delivery:** Raise pull requests and use the existing CI/CD pipeline for production migrations and Cloudflare deployment after changes reach `main`. Do not deploy directly. Local database migrations, builds and browser checks are appropriate verification.
 
+**Authenticated guild-management milestone:** The owner now requests lead/officer-managed initiatives and recruitment needs, an approval queue, and a private member roster. Guild creation requires an account and makes the creator the lead. Leads can appoint officers; both lead and officers can approve/decline applicants, maintain needs and create/update/delete initiatives. Approved members can read the roster, needs and initiatives and update their own character. Applicants do not gain membership or roster access until approval. Existing private owner links support a one-time authenticated leadership claim; once owned, management permissions come from current membership. Migration `0006_guild_community.sql` supplies this model. This supersedes the earlier exclusion of lightweight guild management while leaving player matching, generated artwork and in-game membership integration separate. See `GUILD_COMMUNITY.md` for contracts and verification.
+
 ## 1. Overview
 
 ai-zeroth helps people preparing to play **World of Warcraft: Forever** find compatible people to play and trade with. It is aimed especially at adults with jobs, families, existing friends and limited play windows.

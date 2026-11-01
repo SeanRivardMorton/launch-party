@@ -16,13 +16,29 @@ The QR code always points to **https://launchparty.thunkoid.com/signup**, includ
 - Original pixel forest, campfire and clickable characters; no external image service required.
 - Four-step, account-free mobile signup with character details, multiple roles, professions and explicit email consent. Race is a faction-dependent dropdown; class choices depend on faction and race. Roles are restricted by class: Mage, Hunter, Rogue and Warlock are DPS-only; Warrior can tank or DPS; Priest and Shaman can heal or DPS; Paladin and Druid can fill all three roles. DPS-only classes have their role selected automatically. Invalid selections reset when their prerequisites change, and the server validates the same combinations. “Undecided” is available for race/class plans and for role choices when more than one role is possible.
 - Public `/guilds` directory with faction/region filters and one listing per page. An icon in the landing header also links to the directory.
-- Three-step `/guilds/new` form publishes guild name, faction, region, description and optional recruitment needs, with explicit publication consent. Forever has no selectable servers/realms. Publishing automatically generates a guild page at `/guilds/<id>` and a copyable invite link; no external invite URL is required. Retrying the same publication with its submission ID and management key reuses the page.
+- Three-step `/guilds/new` form publishes guild name, faction, region, description and optional recruitment needs after signing in, with explicit publication consent. The creator becomes the guild lead. Forever has no selectable servers/realms. Publishing automatically generates a guild page at `/guilds/<id>` and a copyable invite link; no external invite URL is required. Retrying the same publication with its submission ID and management key reuses the page.
 - Guilds can list up to 12 role, class, profession or custom needs, with quantities and optional notes (for example, an off-tank, guild enchanter or alchemist). Quick-add presets cover supported classes, roles, primary professions and Cooking, First Aid and Fishing. These appear on the guild page, in directory summaries, and during guild-specific character/profession signup so undecided prospects can see what the crew needs.
-- New guild publication also issues a private management link at `/guilds/<id>/manage#key=…`. Creators can add, edit or remove recruitment needs later, including clearing the list as gaps are filled. The key is remembered in the creating browser when local storage is available; keep the private link for another device. Only its SHA-256 hash is stored in D1. Public APIs never return keys or management links, and editing requires the key in an Authorization header. Older listings remain readable; management links are issued only with new publication, not by knowing a public guild ID.
-- The directory links to the internal guild page. “Join this guild” opens `/signup?guild=<id>`, retains guild context, uses the guild's faction and records private joining interest after explicit consent. `guild_interest` links the signup and guild, with duplicate joining submissions producing one association. The interest signup and association are saved in one D1 batch. Listings are account-free, self-declared and public; joining interest and contact details are private. Approval inboxes and in-game membership integration remain planned.
+- The guild hall at `/guilds/<id>/manage` uses authenticated membership permissions. Leads and officers manage recruitment needs, applications and initiatives. The lead can appoint/demote officers. Approved members can view the roster, initiatives and needs, and update their own character. Roster pages contain nicknames and character plans, never account emails.
+- Guilds created before authenticated ownership can still be claimed by signing in and using their private management link at `/guilds/<id>/manage#key=…`. Only its SHA-256 hash is stored in D1. Once claimed, recruitment editing requires a current lead/officer session; possession of the old key alone no longer grants editing access. Knowing a public guild ID cannot claim ownership.
+- Public guild pages link to `/guilds/<id>/apply`. A signed-in player submits a faction-compatible character and optional introduction, then waits for lead/officer approval. Pending/declined applicants cannot see the private roster or initiatives. Approval creates a member; removing someone revokes guild-hall access. The older `/signup?guild=<id>` flow still records private interest in `guild_interest`; an interest signup never automatically becomes an account, application or membership.
 - Existing guild listings also have internal pages. Old external links are no longer used in the public directory or detail API. Invite links use the current origin: localhost during development, the public domain after deployment.
 - Separate `/register`, `/login` and protected `/account` screens using the existing Better Auth/D1 foundation. The header follows session state; account holders can update their account name and sign out. Registration does not convert interest submissions, publish player cards or grant guild membership.
-- Matching and Battle.net linking remain planned. An authenticated **`/campfire`** implements shared guild rooms, published campfire character cards and optional generated animation atlases; see [`CAMPFIRE.md`](./CAMPFIRE.md) for verification, resources and the outstanding authenticated guild-membership handoff. Full animated generation still requires real-output visual verification.
+- Better Auth email/password account UI is available for guild creation, applications and the guild hall. The presentation/interest signup remains account-free.
+- Matching and Battle.net linking remain planned. An authenticated **`/campfire`** implements shared guild rooms, published campfire character cards and optional generated animation atlases; see [`CAMPFIRE.md`](./CAMPFIRE.md) for verification and resource setup. The guild approval bridge is described in [`GUILD_COMMUNITY.md`](./GUILD_COMMUNITY.md). Full animated generation still requires real-output visual verification.
+
+### Guild membership and initiatives
+
+| Capability | Lead | Officer | Member | Applicant |
+| --- | --- | --- | --- | --- |
+| View public guild needs | Yes | Yes | Yes | Yes |
+| View roster and initiatives | Yes | Yes | Yes | No |
+| Approve/decline applicants | Yes | Yes | No | No |
+| Edit needs and initiatives | Yes | Yes | No | No |
+| Appoint/demote officers | Yes | No | No | No |
+| Remove ordinary members | Yes | Yes | No | No |
+| Remove officers | Yes | No | No | No |
+
+The lead cannot be removed or demoted. Initiatives have a title, description and `planned`, `active` or `completed` status (up to 50 per guild). Rosters and pending applications are paginated, 20 at a time. Permissions are enforced server-side, not merely by hiding controls. See [`GUILD_COMMUNITY.md`](./GUILD_COMMUNITY.md) for the API, data and live-campfire integration contracts.
 
 ### Forever character choices
 
@@ -44,7 +60,7 @@ pnpm dev
 
 Open http://localhost:3000. Local D1 state is stored under `.wrangler/` and is not committed. The landing page and signup work without authentication credentials or an OpenAI key.
 
-### Optional local authentication
+### Local authentication for guild features
 
 Copy `.dev.vars.example` to `.dev.vars`. Replace its placeholder with a fresh secret generated using:
 
@@ -52,7 +68,7 @@ Copy `.dev.vars.example` to `.dev.vars`. Replace its placeholder with a fresh se
 openssl rand -hex 32
 ```
 
-Keep `BETTER_AUTH_URL=http://localhost:3000`, then restart the dev server. Better Auth is mounted at `/api/auth/*`; its client helper is `src/lib/auth-client.ts`. Visit `/register` to create an account with a password of at least 12 characters, `/login` to sign in, and `/account` to manage your account name or sign out. Email delivery, password recovery and OAuth providers are not configured. Linking Battle.net is a separate future integration. Missing auth configuration shows a friendly unavailable state while public interest and guild routes remain usable. See [AUTH.md](./AUTH.md) for session boundaries, repeatable local browser checks and the campfire integration handoff.
+Keep `BETTER_AUTH_URL=http://localhost:3000`, then restart the dev server. Better Auth is mounted at `/api/auth/*`; its client helper is `src/lib/auth-client.ts`. Visit `/register` to create an account with a password of at least 12 characters, `/login` to sign in, and `/account` to manage your account name or sign out. Guild creation, application and hall screens also provide an inline account gate. Email delivery, password recovery and OAuth providers are not configured. Linking Battle.net is a separate future integration. Missing auth configuration shows a friendly unavailable state while public interest and guild directory pages remain usable. See [AUTH.md](./AUTH.md) for session boundaries, repeatable local browser checks and the campfire integration handoff.
 
 ## Cloudflare deployment
 
@@ -102,12 +118,22 @@ pnpm exec wrangler d1 execute DB --remote --command "SELECT need, COUNT(*) AS to
 
 The app does not expose a public signup directory or a public admin endpoint. Private guild interest is stored in `guild_interest`, referencing `guilds` and `interest`; inspect it only through the authenticated D1 console. Migration `0004_guild_interest.sql` adds this association without rewriting existing guilds or signups. `0005_guild_recruitment.sql` adds validated recruitment-needs JSON (defaulting to an empty list for old guilds) and a nullable management-key hash. Remove a requested email with a parameterised query in a private admin tool or the authenticated D1 console. No automatic mailing service is configured; follow-up is manual.
 
+`0006_guild_community.sql` adds authenticated ownership, `guild_memberships`, `guild_applications` and `guild_initiatives`. Existing private interest records are retained and are never silently published or converted into memberships.
+
 ## Verification
 
 ```sh
 pnpm check
 pnpm build
 ```
+
+For authenticated guild integration tests, configure local auth above, apply `pnpm db:local`, start `pnpm dev` in another terminal, then run:
+
+```sh
+pnpm test:guilds
+```
+
+The real Better Auth/D1 tests refuse remote hosts and clean up only their synthetic local fixtures. Checks cover lead creation, pending-applicant privacy, persistent/idempotent approval, class-role validation, officer permissions, initiative/needs editing, removal, approval races, a multi-page roster, legacy ownership claims and the optional campfire membership bridge. `GUILD_TEST_URL` can select another local server origin.
 
 Browser smoke checks for the character/guild milestone cover the four signup steps, Back navigation retaining values, multiple roles, duplicate-profession validation, guild publication, directory faction filtering and refresh persistence. Viewports checked: 1440×900, 1280×720, 390×844, 320×568 and 844×390. Hosted-invite checks additionally cover automatic guild-page creation, copying the invite URL, an independent mobile browser opening the link and completing guild-specific signup, and return navigation to the guild. New form screens allow internal scrolling on smaller displays so controls remain accessible, while the document stays fixed. API checks cover validation, publication and guild-joining consent, cross-origin rejection, unknown guilds, faction mismatches, duplicate publications/signups and private email exclusion. SQLite was queried separately to confirm all character fields persisted and duplicate joining submissions produced one association. Existing listings with legacy external links were checked for compatibility with the new internal pages. Only synthetic `example.invalid` details are used for checks. These checks were run locally; they do not claim the latest milestone has been deployed.
 
@@ -137,4 +163,4 @@ The public deployment was also tested in a fresh browser without Cloudflare auth
 1. **0–15s:** “Three friends want to play WoW Forever. We need a crew whose schedules work in real life.”
 2. **15–35s:** Show the QR code, then the character, role and profession signup steps on mobile.
 3. **35–60s:** Submit synthetic details and choose to list a guild or find one.
-4. **60–80s:** Open a guild's Launchparty page, copy its invite link and show the guild-specific signup. Explain that player matching and image generation are still planned.
+4. **60–80s:** Open a guild's Launchparty page, apply through its invite, and show lead approval and the member roster. Explain that player matching remains planned and describe avatar verification accurately using `CAMPFIRE.md`.

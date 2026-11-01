@@ -1,0 +1,20 @@
+.guild-community-page { overscroll-behavior: contain; }
+.guild-hall-card { width: min(880px, 100%); }
+.guild-community-page h3, .guild-character-form h3 { font: 400 24px/1.3 Georgia, serif; margin: 0 0 18px; }
+.guild-community-page h4 { font: 400 19px/1.3 Georgia, serif; }
+.guild-community-page p { line-height: 1.7; }
+.guild-community-page textarea { width: 100%; font-size: 16px; }
+.guild-community-page .field-grid { margin-top: 18px; }
+.guild-community-section { border-top: 1px solid var(--border); margin-top: 28px; padding-top: 24px; min-width: 0; }
+.guild-community-list { list-style: none; margin: 0; padding: 0; display: grid; gap: 12px; }
+.guild-community-item { border: 1px solid var(--border); border-radius: 4px; padding: 16px; min-width: 0; overflow-wrap: anywhere; }
+.guild-community-item p { font-size: 12px; margin-top: 8px; color: var(--muted); white-space: pre-wrap; }
+.guild-community-actions { display: flex; align-items: center; flex-wrap: wrap; gap: 8px; margin-top: 14px; }
+.guild-community-actions .button { min-height: 42px; }
+.guild-community-role { color: var(--accent); font: 10px/1.5 monospace; text-transform: uppercase; margin-left: 10px; }
+.guild-community-notice { border: 1px solid var(--border); padding: 16px; margin-top: 20px; font-size: 13px; }
+.guild-community-page details > summary { cursor: pointer; min-height: 44px; padding-block: 12px; color: var(--accent); font-size: 13px; }
+.guild-text-button { background: transparent; border: 0; color: var(--accent); text-decoration: underline; cursor: pointer; padding: 5px; }
+.guild-community-page :focus-visible { outline: 2px solid var(--accent); outline-offset: 3px; }
+.guild-community-page [aria-busy="true"] { cursor: progress; }
+@media(max-width:520px) { .guild-community-page { padding: 12px; } .guild-hall-card { padding: 20px; } .guild-community-actions .button { flex-grow: 1; } }
