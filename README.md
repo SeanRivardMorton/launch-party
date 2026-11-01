@@ -24,7 +24,7 @@ The QR code always points to **https://launchparty.thunkoid.com/signup**, includ
 - Existing guild listings also have internal pages. Old external links are no longer used in the public directory or detail API. Invite links use the current origin: localhost during development, the public domain after deployment.
 - Separate `/register`, `/login` and protected `/account` screens using the existing Better Auth/D1 foundation. The header follows session state; account holders can update their account name and sign out. Registration does not convert interest submissions, publish player cards or grant guild membership.
 - Better Auth email/password account UI is available for guild creation, applications and the guild hall. The presentation/interest signup remains account-free.
-- Player matching, personalised image generation and Battle.net linking are **planned**, not implemented in this branch.
+- Matching and Battle.net linking remain planned. An authenticated **`/campfire`** implements shared guild rooms, published campfire character cards and optional generated animation atlases; see [`CAMPFIRE.md`](./CAMPFIRE.md) for verification and resource setup. The guild approval bridge is described in [`GUILD_COMMUNITY.md`](./GUILD_COMMUNITY.md). Full animated generation still requires real-output visual verification.
 
 ### Guild membership and initiatives
 
@@ -50,7 +50,7 @@ TanStack Start + React + TypeScript, Vite, Tailwind CSS, shadcn-style local Butt
 
 ## Local setup
 
-Requires Node 22.12+ and pnpm 10+. Install dependencies using the committed lockfile:
+Requires Node 22.13+ and pnpm 10+. Install dependencies using the committed lockfile:
 
 ```sh
 pnpm install --frozen-lockfile
@@ -72,7 +72,7 @@ Keep `BETTER_AUTH_URL=http://localhost:3000`, then restart the dev server. Bette
 
 ## Cloudflare deployment
 
-The current `wrangler.jsonc` points at this project's provisioned database and the custom domain `launchparty.thunkoid.com`. Workers.dev and version preview URLs are disabled; the existing `thunkoid.com` homepage is preserved. For your own Cloudflare account:
+The current `wrangler.jsonc` points at this project's provisioned database and the custom domain `launchparty.thunkoid.com`. The new campfire also requires the private R2 bucket and Durable Object setup in [`CAMPFIRE.md`](./CAMPFIRE.md) **before deployment**. Workers.dev and version preview URLs are disabled; the existing `thunkoid.com` homepage is preserved. For your own Cloudflare account:
 
 ```sh
 pnpm exec wrangler login
@@ -93,7 +93,7 @@ The compatibility date is `2026-10-30` to match the installed local Workers runt
 
 ### Automatic deployment with GitHub Actions
 
-`.github/workflows/deploy.yml` runs on pull requests targeting `main` and pushes to `main`. It installs dependencies from the frozen lockfile, checks TypeScript and builds the app. After successful checks, a push to `main` also applies pending production D1 migrations and deploys the built Worker to **https://launchparty.thunkoid.com**.
+`.github/workflows/deploy.yml` runs on pull requests targeting any branch (including stacked PRs) and pushes to `main`. It installs dependencies from the frozen lockfile, runs campfire unit tests, checks TypeScript and builds the app. After successful checks, a push to `main` also applies pending production D1 migrations and deploys the built Worker to **https://launchparty.thunkoid.com**.
 
 In the GitHub repository, open **Settings → Secrets and variables → Actions** and add these repository secrets:
 
@@ -163,4 +163,4 @@ The public deployment was also tested in a fresh browser without Cloudflare auth
 1. **0–15s:** “Three friends want to play WoW Forever. We need a crew whose schedules work in real life.”
 2. **15–35s:** Show the QR code, then the character, role and profession signup steps on mobile.
 3. **35–60s:** Submit synthetic details and choose to list a guild or find one.
-4. **60–80s:** Open a guild's Launchparty page, copy its invite link and show the guild-specific signup. Explain that player matching and image generation are still planned.
+4. **60–80s:** Open a guild's Launchparty page, apply through its invite, and show lead approval and the member roster. Explain that player matching remains planned and describe avatar verification accurately using `CAMPFIRE.md`.
