@@ -178,7 +178,7 @@ export function GuildCampfireScreen() {
   const [error, setError] = useState('')
   const [editing, setEditing] = useState(() => typeof window !== 'undefined' && new URLSearchParams(window.location.search).get('edit') === '1')
   const [guild, setGuild] = useState('')
-  const { theme, preference, choose, style, ready } = useSceneTheme(me?.profile?.race ?? null)
+  const { theme, preference, choose, style, ready } = useSceneTheme(me ? me.profile?.race ?? null : undefined)
   const [generationBusy, setGenerationBusy] = useState(false)
   const refresh = async () => { try { const data = await api<Me>('me'); setMe(data); setGuild(previous => {
     const requested = new URLSearchParams(window.location.search).get('guild') || ''

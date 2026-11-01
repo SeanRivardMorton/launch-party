@@ -1,13 +1,16 @@
 import type { SceneTheme } from '@/lib/scene-themes'
 import { RegionalLandscape } from './regional-landscape'
 import './world-scene.css'
+import { useSceneTheme } from './use-scene-theme'
 
 const stars = Array.from({ length: 45 }, (_, i) => ({ x: (i * 193 + 37) % 1440, y: (i * 83 + 19) % 530, size: i % 7 === 0 ? 3 : 1.5 }))
 const distantTrees = [[-30, 400, 175], [85, 450, 160], [210, 490, 130], [325, 534, 100], [1040, 510, 120], [1140, 448, 155], [1250, 392, 195], [1370, 430, 180]]
 const foregroundTrees = [[-100, 270, 280, 630], [25, 510, 165, 390], [1250, 320, 260, 585], [1215, 570, 130, 325]]
 const grassTufts = ['M275 825h6v-14h4v14h9v-8h4v15h-23z', 'M1125 797h4v-14h5v14h8v-7h4v14h-21z', 'M195 873h5v-12h5v12h9v-19h4v26h-23z', 'M1225 869h4v-8h6v8h7v-16h5v23h-22z']
 
-export function WorldScene({ theme = 'moonwell', sceneryOnly = false }: { theme?: SceneTheme; sceneryOnly?: boolean }) {
+export function WorldScene({ theme: selectedTheme, sceneryOnly = false }: { theme?: SceneTheme; sceneryOnly?: boolean }) {
+  const { theme: appTheme } = useSceneTheme()
+  const theme = selectedTheme ?? appTheme
   return <svg className="world-scene" viewBox="0 0 1440 900" preserveAspectRatio="xMidYMax slice" aria-hidden="true" shapeRendering="crispEdges">
     <defs>
       <linearGradient id="sky" x2="0" y2="1"><stop stopColor="var(--sky-top)" /><stop offset="1" stopColor="var(--sky-bottom)" /></linearGradient>

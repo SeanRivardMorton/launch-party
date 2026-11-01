@@ -1,6 +1,6 @@
 # Background scenery
 
-The landing page and live `/campfire` share a palette registry, preference hook,
+All app routes share an app-level theme provider, palette registry and preference hook,
 native keyboard/screen-reader-accessible picker, and original SVG pixel landscapes.
 The room's positions, movement bounds, sprites and fire remain unchanged. A quiet
 ground overlay in the live room keeps character names and bodies legible.
@@ -26,17 +26,20 @@ not the ability to select scenery. Storage events synchronize open tabs.
 Automatic mode reads only `/api/campfire/me` after the existing auth client
 confirms a session. It never looks up interest records, uses email as a key, or
 changes server/public DTOs. Only the race is held transiently in component state;
-no private profile data is written to storage or SSR HTML. The landing page
+no private profile data is written to storage or SSR HTML. The app-level provider
 refreshes on focus/visibility and every 15 seconds while visible in Auto mode.
-The live campfire reuses its already-authorized profile and updates immediately
-after a character save. Failed/missing profile data gets the neutral fallback.
+The live campfire supplies its freshly saved authorized profile race to the
+provider immediately after a character save. Older in-flight reads cannot overwrite
+that newer saved race. Failed/missing profile data gets the neutral fallback.
 The initial server/client render is always the neutral Auto state before effects
 restore preferences, avoiding hydration mismatches (a brief neutral paint is
 intentional).
 
-Account/auth, signup, guild directory and guild management screens intentionally
-retain their existing fixed Moonwell/card theme; these are form/document screens,
-not scenery surfaces. No account/menu/auth ownership changes are included.
+Account/auth, signup, guild directory, guild details and guild management screens
+all inherit the selected palette and landscape; there are no fixed-Moonwell route
+exceptions. The root provider keeps state across client-side route navigation;
+full reloads restore the same saved preference. Forms keep their existing layouts,
+typography and contrast. Auth/account behavior and shared DTOs are unchanged.
 
 ## Local verification
 

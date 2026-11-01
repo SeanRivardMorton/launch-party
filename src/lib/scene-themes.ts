@@ -31,4 +31,6 @@ export function themeForRace(race?: string | null): SceneTheme {
 export function resolveTheme(preference: ThemePreference, race?: string | null): SceneTheme {
   return preference === 'automatic' ? themeForRace(race) : preference
 }
-export function themeStyle(theme: SceneTheme): CSSProperties { return sceneThemes[theme].palette as CSSProperties }
+export function themeStyle(theme: SceneTheme): CSSProperties {
+  return { ...sceneThemes[theme].palette, '--background': theme === 'tavern' ? '#23251d' : '#0b232b', '--muted': theme === 'tavern' ? '#b6b7a0' : '#9cadac', '--border': theme === 'tavern' ? '#626044' : '#456064' } as CSSProperties
+}

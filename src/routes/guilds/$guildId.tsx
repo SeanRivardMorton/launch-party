@@ -13,7 +13,7 @@ function GuildPage() {
   const { guildId } = Route.useParams()
   const { guild, loading, error, retry } = useGuild(guildId)
 
-  return <main className="site signup-page" data-theme="moonwell">
+  return <main className="site signup-page">
     <WorldScene />
     <section className="signup-card" aria-labelledby="guild-title">
       <nav className="guild-nav"><a href="/guilds"><ArrowLeft size={16} />Guild directory</a></nav>

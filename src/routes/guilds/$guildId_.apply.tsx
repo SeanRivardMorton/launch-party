@@ -18,7 +18,7 @@ function ApplyPage() {
 function ApplyGuild() {
   const { guildId } = Route.useParams()
   const { guild, loading, error, retry } = useGuild(guildId)
-  return <main className="site signup-page guild-community-page" data-theme="moonwell"><WorldScene /><section className="signup-card" aria-labelledby="guild-apply-title">
+  return <main className="site signup-page guild-community-page"><WorldScene /><section className="signup-card" aria-labelledby="guild-apply-title">
     <nav className="guild-nav"><a href={`/guilds/${encodeURIComponent(guildId)}`}>← Guild page</a><a href={`/guilds/${encodeURIComponent(guildId)}/manage`}>Guild hall</a></nav>
     <div className="dialog-kicker">GUILD APPLICATION</div><h2 id="guild-apply-title">{guild ? `Join ${guild.name}.` : 'Find your crew.'}</h2>
     {loading ? <p className="dialog-description" role="status">Finding your guild…</p> : error || !guild ? <div className="empty-state"><p role="alert">{error || 'Guild unavailable.'}</p><Button variant="outline" onClick={retry}>Try again</Button></div> : <Application guild={guild} />}

@@ -2,3 +2,4 @@
 .theme-picker select, .guild-app .theme-picker select { width: 180px; max-width: 100%; min-height: 44px; margin: 0; border: 1px solid #667b7b; border-radius: 4px; background: #10292e; color: #f0edda; padding: 8px; font: 14px/1.4 'Trebuchet MS',sans-serif; text-overflow: ellipsis; cursor: pointer; }
 .theme-picker select:focus-visible { outline: 2px solid var(--accent); outline-offset: 3px; }
 @media(max-width:600px) { .site-header { padding-inline: 12px; } .header-right { gap: 6px; } .header-right > .header-link { display: none; } .theme-picker select, .guild-app .theme-picker select { width: 126px; font-size: 12px; padding-inline: 4px; } }
+@media(max-width:360px) { .site-header .theme-picker select { width: 100px; } }

@@ -65,7 +65,7 @@ test('authorized profile mapping, live race changes, manual precedence, campfire
     }
     const empty = await context.newPage()
     await empty.goto('/')
-    await expect(empty.getByRole('link', { name: 'My account' })).toBeVisible()
+    await expect(empty.getByRole('button', { name: 'My account' })).toBeVisible()
     await expect(empty.locator('.site')).toHaveAttribute('data-theme', 'moonwell')
     await empty.close()
     await save('Night Elf')
@@ -74,6 +74,18 @@ test('authorized profile mapping, live race changes, manual precedence, campfire
     const picker = page.getByRole('combobox', { name: 'Background scenery' })
     const site = page.locator('.site')
     await expect(site).toHaveAttribute('data-theme', 'darnassus')
+    for (const route of ['/account', '/guilds', '/guilds/new', '/signup', '/']) {
+      await page.goto(route)
+      await expect(page.locator('.app-theme')).toHaveAttribute('data-theme', 'darnassus')
+      await expect(page.locator('.world-scene [data-landscape]').first()).toHaveAttribute('data-landscape', 'darnassus')
+    }
+    for (const viewport of viewports) {
+      await page.setViewportSize(viewport)
+      await expect(picker).toBeInViewport({ ratio: 1 })
+      await expect(page.locator('.signup-qr')).toBeInViewport({ ratio: 1 })
+      expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true)
+    }
+    await page.setViewportSize(viewports[0])
     for (const [race, theme] of [['Orc', 'durotar'], ['Troll', 'durotar'], ['Tauren', 'mulgore'], ['Undead', 'tirisfal'], ['Human', 'elwynn'], ['Dwarf', 'dunmorogh'], ['Gnome', 'dunmorogh'], ['Skyborne', 'moonwell'], ['Undecided', 'moonwell'], ['Unknown', 'moonwell']]) {
       await save(race)
       await page.evaluate(() => window.dispatchEvent(new Event('focus')))
@@ -119,6 +131,34 @@ test('authorized profile mapping, live race changes, manual precedence, campfire
     await context.close()
     if (id) execFileSync('pnpm', ['exec', 'wrangler', 'd1', 'execute', 'DB', '--local', '--command', `DELETE FROM user WHERE id='${id}'`], { stdio: 'pipe' })
   }
+})
+
+test('manual themes persist through app routes, links, reload and browser history', async ({ page }) => {
+  await page.goto('/')
+  const routes = ['/signup', '/login', '/register', '/guilds', '/guilds/unknown-theme-test', '/signup?guild=unknown-theme-test']
+  for (const theme of Object.keys(sceneThemes)) {
+    await page.goto('/')
+    await page.getByRole('combobox', { name: 'Background scenery' }).selectOption(theme)
+    for (const route of routes) {
+      await page.goto(route)
+      await expect(page.locator('.app-theme')).toHaveAttribute('data-theme', theme)
+      if (theme !== 'moonwell' && theme !== 'tavern') await expect(page.locator('.world-scene [data-landscape]').first()).toHaveAttribute('data-landscape', theme)
+      expect(await page.locator('.site').evaluate(el => getComputedStyle(el).getPropertyValue('--sky-top').trim())).toBe(sceneThemes[theme as keyof typeof sceneThemes].palette['--sky-top'])
+    }
+    await page.reload()
+    await expect(page.locator('.app-theme')).toHaveAttribute('data-theme', theme)
+    await page.goBack()
+    await expect(page.locator('.app-theme')).toHaveAttribute('data-theme', theme)
+  }
+  await page.goto('/')
+  await page.getByRole('link', { name: 'Sign in', exact: true }).click()
+  await expect(page).toHaveURL(/\/login/)
+  await expect(page.locator('.app-theme')).toHaveAttribute('data-theme', 'dunmorogh')
+  await page.locator('.app-theme').evaluate(el => el.setAttribute('data-navigation-test', 'retained'))
+  await page.getByRole('link', { name: 'Create an account', exact: true }).click()
+  await expect(page).toHaveURL(/\/register/)
+  await expect(page.locator('.app-theme')).toHaveAttribute('data-navigation-test', 'retained')
+  await expect(page.locator('.app-theme')).toHaveAttribute('data-theme', 'dunmorogh')
 })
 
 test('storage denied, corrupt legacy storage, cross-tab updates and unavailable profile are safe', async ({ browser }) => {

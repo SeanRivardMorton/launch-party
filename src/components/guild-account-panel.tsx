@@ -30,7 +30,7 @@ export function GuildAuthGate({ children, title = 'Your place in the guild.' }: 
   }
 
   if (session.data?.user) return children
-  return <main className="site signup-page guild-community-page" data-theme="moonwell"><WorldScene />
+  return <main className="site signup-page guild-community-page"><WorldScene />
     <section className="signup-card" aria-labelledby={id}>
       <nav className="guild-nav"><a href="/guilds">← Guild directory</a></nav>
       <div className="dialog-kicker">GUILD ACCOUNT</div>
