@@ -1,4 +1,5 @@
 import { createFileRoute } from '@tanstack/react-router'
+import { Select } from '@/components/ui/select'
 import { useEffect, useState } from 'react'
 import { ArrowLeft, ArrowRight, Plus } from 'lucide-react'
 import { Button } from '@/components/ui/button'
@@ -45,8 +46,8 @@ function GuildDirectory() {
       <h2 id="guilds-title">Find your next guild.</h2>
       <p className="dialog-description">Meet a crew and visit their guild page to register interest in joining.</p>
       <div className="directory-filters">
-        <label>Faction<select value={faction} onChange={event => { setFaction(event.target.value); setPage(0) }}><option value="">All factions</option>{factions.map(value => <option key={value}>{value}</option>)}</select></label>
-        <label>Region<select value={region} onChange={event => { setRegion(event.target.value); setPage(0) }}><option value="">All regions</option>{regions.map(value => <option key={value}>{value}</option>)}</select></label>
+        <label>Faction<Select value={faction} onValueChange={value => { setFaction(value); setPage(0) }}><option value="">All factions</option>{factions.map(value => <option key={value}>{value}</option>)}</Select></label>
+        <label>Region<Select value={region} onValueChange={value => { setRegion(value); setPage(0) }}><option value="">All regions</option>{regions.map(value => <option key={value}>{value}</option>)}</Select></label>
       </div>
       <div className="directory-result" aria-live="polite" aria-busy={status === 'loading'}>
         {status === 'loading' ? <p className="empty-state">Looking for guilds…</p> : status === 'error' ? <div className="empty-state"><p>The guild directory is unavailable.</p><Button variant="outline" onClick={() => setRetry(retry + 1)}>Try again</Button></div> : guild ? <article className="guild-card">

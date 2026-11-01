@@ -3,6 +3,7 @@ import { useEffect, useState, type FormEvent } from 'react'
 import { ArrowLeft, ArrowRight, CheckCheck } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
+import { Select } from '@/components/ui/select'
 import { WorldScene } from '@/components/world-scene'
 import { getRoles, needs, professions, type Role } from '@/lib/interest'
 import { factions, getClasses, getRaces, raceLabel, type CharacterClass, type Faction, type Race } from '@/lib/character-options'
@@ -94,9 +95,9 @@ function SignupPage() {
             <label>Email<Input name="email" type="email" autoComplete="email" required={step === 0} maxLength={254} /></label>
           </fieldset>
           <fieldset hidden={step !== 1} className="field-grid">
-            <label>Faction<select name="faction" value={faction} disabled={Boolean(guild)} onChange={event => changeCharacter(event.target.value as Faction, race)}>{factions.map(value => <option key={value}>{value}</option>)}</select></label>
-            <label>Race<select name="race" value={race} onChange={event => changeCharacter(faction, event.target.value as Race)}>{getRaces(faction).map(value => <option key={value} value={value}>{raceLabel(faction, value)}</option>)}</select></label>
-            <label>Class<select name="characterClass" value={characterClass} onChange={event => changeClass(event.target.value as CharacterClass)}>{getClasses(faction, race).map(value => <option key={value}>{value}</option>)}</select></label>
+            <label>Faction<Select name="faction" value={faction} disabled={Boolean(guild)} onValueChange={value => changeCharacter(value as Faction, race)}>{factions.map(value => <option key={value}>{value}</option>)}</Select></label>
+            <label>Race<Select name="race" value={race} onValueChange={value => changeCharacter(faction, value as Race)}>{getRaces(faction).map(value => <option key={value} value={value}>{raceLabel(faction, value)}</option>)}</Select></label>
+            <label>Class<Select name="characterClass" value={characterClass} onValueChange={value => changeClass(value as CharacterClass)}>{getClasses(faction, race).map(value => <option key={value}>{value}</option>)}</Select></label>
             {race === 'Skyborne' && <p className="field-hint">Skyborne access requires the Skyborne Heroic Pack or higher.</p>}
           </fieldset>
           <fieldset hidden={step !== 2} className="field-grid">
@@ -106,12 +107,12 @@ function SignupPage() {
               setFulfilledRoles(next.length ? next : ['Undecided'])
             }} />{role === 'Damage' ? 'Damage (DPS)' : role}</label>)}</div></fieldset>
             {availableRoles.length === 1 && <p className="field-hint">{characterClass} can fulfill the DPS role. It’s selected automatically.</p>}
-            <label>First primary profession<select name="profession" defaultValue=""><option value="">Undecided / none</option>{professions.map(profession => <option key={profession}>{profession}</option>)}</select></label>
-            <label>Second primary profession<select name="profession" defaultValue=""><option value="">Undecided / none</option>{professions.map(profession => <option key={profession}>{profession}</option>)}</select></label>
+            <label>First primary profession<Select name="profession" defaultValue=""><option value="">Undecided / none</option>{professions.map(profession => <option key={profession}>{profession}</option>)}</Select></label>
+            <label>Second primary profession<Select name="profession" defaultValue=""><option value="">Undecided / none</option>{professions.map(profession => <option key={profession}>{profession}</option>)}</Select></label>
           </fieldset>
           <fieldset hidden={step !== 3} className="field-grid">
             {guild ? <label className="consent"><input name="guildConsent" type="checkbox" required={step === 3} /><span>Register my interest in joining {guild.name}. My signup details stay private.</span></label> : <fieldset className="choice-field"><legend>Guild plans</legend>{[['find', 'Find a guild to join'], ['list', 'List my guild for others to join'], ['later', 'Decide later']].map(([value, label]) => <label className="check-choice" key={value}><input type="radio" name="guildIntent" value={value} checked={guildIntent === value} onChange={() => setGuildIntent(value)} />{label}</label>)}</fieldset>}
-            <label>Looking for<select name="need" defaultValue="A bit of everything">{needs.map(need => <option key={need}>{need}</option>)}</select></label>
+            <label>Looking for<Select name="need" defaultValue="A bit of everything">{needs.map(need => <option key={need}>{need}</option>)}</Select></label>
             <label className="consent"><input name="consent" type="checkbox" required={step === 3} /><span>Email me about ai-zeroth. My details stay private. I can ask to be removed any time.</span></label>
           </fieldset>
           <div className="honeypot" aria-hidden="true"><label>Leave empty<Input name="website" tabIndex={-1} autoComplete="off" /></label></div>
