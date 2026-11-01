@@ -22,8 +22,9 @@ function GuildPage() {
         <h2 id="guild-title">{guild.name}</h2>
         <p className="guild-description guild-page-description">{guild.description}</p>
         <GuildNeeds needs={guild.recruitmentNeeds} />
-        <a className="button button-primary" href={`/signup?guild=${encodeURIComponent(guild.id)}`}>Join this guild<ArrowRight size={16} /></a>
-        <p className="guild-note">Register your interest in joining this crew. Your signup details stay private.</p>
+        <a className="button button-primary" href={`${guild.path}/apply`}>Apply to join<ArrowRight size={16} /></a>
+        <p className="guild-note">Create or sign in to your account and send an application for the guild lead or officers to review.</p>
+        <a className="directory-signup" href={`${guild.path}/manage`}>Guild hall · Members and initiatives<ArrowRight size={14} /></a>
         <GuildInvite path={guild.path} />
         <GuildManagementLink guildId={guild.id} />
       </>}

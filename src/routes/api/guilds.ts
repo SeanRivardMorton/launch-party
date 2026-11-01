@@ -5,6 +5,7 @@ import { factions } from '@/lib/interest'
 import { createManagementKey, guildManagementPath } from '@/lib/guild-management'
 import { hashManagementKey } from '@/lib/guild-management.server'
 import { readSameOriginJson } from '@/lib/request.server'
+import { campfireGrant, defaultGuildProfile, requireGuildUser } from '@/lib/guild-community.server'
 
 export const Route = createFileRoute('/api/guilds')({
   server: { handlers: {
@@ -27,6 +28,9 @@ export const Route = createFileRoute('/api/guilds')({
     POST: async ({ request }) => {
       const input = await readSameOriginJson(request)
       if ('response' in input) return input.response
+      const identity = await requireGuildUser(request)
+      if ('response' in identity) return identity.response
+      const user = identity.user
       const parsed = guildSchema.safeParse(input.body)
       if (!parsed.success) return Response.json({ error: parsed.error.issues[0]?.message || 'Please check the listing.' }, { status: 400 })
       const { name, faction, region, description, submissionId, recruitmentNeeds } = parsed.data
@@ -37,9 +41,14 @@ export const Route = createFileRoute('/api/guilds')({
       const managementHash = await hashManagementKey(managementKey)
       try {
         // Keep the legacy NOT NULL column compatible; Forever does not use realms.
-        await env.DB.prepare("INSERT INTO guilds (id, name, faction, region, realm, description, join_url, recruitment_needs, management_key_hash) VALUES (?, ?, ?, ?, '', ?, ?, ?, ?) ON CONFLICT(id) DO NOTHING")
-          .bind(id, name, faction, region, description, path, JSON.stringify(recruitmentNeeds), managementHash).run()
-        const owned = await env.DB.prepare('SELECT id FROM guilds WHERE id = ? AND management_key_hash = ?').bind(id, managementHash).first()
+        await env.DB.batch([
+          env.DB.prepare("INSERT INTO guilds (id, name, faction, region, realm, description, join_url, recruitment_needs, management_key_hash, owner_user_id) VALUES (?, ?, ?, ?, '', ?, ?, ?, ?, ?) ON CONFLICT(id) DO NOTHING")
+            .bind(id, name, faction, region, description, path, JSON.stringify(recruitmentNeeds), managementHash, user.id),
+          env.DB.prepare("INSERT INTO guild_memberships (guild_id, user_id, role, profile) SELECT id, ?, 'leader', ? FROM guilds WHERE id = ? AND owner_user_id = ? AND management_key_hash = ? ON CONFLICT(guild_id, user_id) DO NOTHING")
+            .bind(user.id, JSON.stringify(defaultGuildProfile(user, faction)), id, user.id, managementHash),
+          ...await campfireGrant(env.DB, id, user.id),
+        ])
+        const owned = await env.DB.prepare('SELECT id FROM guilds WHERE id = ? AND management_key_hash = ? AND owner_user_id = ?').bind(id, managementHash, user.id).first()
         if (!owned) return Response.json({ error: 'This publication ID is already in use. Please start a new listing.' }, { status: 409 })
         return Response.json({ success: true, path, managementPath: guildManagementPath(id, managementKey) }, { headers: { 'Cache-Control': 'no-store' } })
       } catch {
