@@ -58,4 +58,20 @@ describe('deterministic atlas assembly', () => {
     expect(tops[0]).toBe(tops[4])
     expect(transparentResidue).toBe(0)
   }, 20_000)
+  it('extracts complete poses across nominal grid lines and ignores tiny detached noise', () => {
+    const original = decodePng(stripFixture(0), 1536, 1024)
+    const shifted = createPng(1536, 1024)
+    shifted.data.set(original.data)
+    for (let y = 480; y < 650; y++) {
+      for (let x = 65; x < 126; x++) shifted.data.fill(0, (y * 1536 + x) * 4, (y * 1536 + x) * 4 + 4)
+      for (let x = 175; x < 236; x++) shifted.data.set([50, 60, 150, 255], (y * 1536 + x) * 4)
+    }
+    shifted.data.set([20, 20, 20, 80], 0)
+    const bounds = inspectStrip(encodePng(shifted), 0)
+    expect(bounds.frames).toHaveLength(6)
+    expect(bounds.frames![0].left).toBe(175)
+    expect(bounds.frames![0].right).toBe(235)
+    expect(bounds.frames![0].right).toBeGreaterThan(192)
+    expect(bounds.top).toBe(480)
+  })
 })

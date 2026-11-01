@@ -56,9 +56,14 @@ export class AvatarGeneration extends DurableObject<Cloudflare.Env> {
         if (!base) throw new SpriteError('missing_reference')
         const prompt = `Create a production animation row strip for the EXACT adventurer in image 1; lock face, race, outfit, colors, proportions, style and equipment. Image 2 is a construction guide ONLY: do not draw its lines or colors. Output 1536x1024 transparent PNG with EXACTLY ${animation.durations.length} sequential full-body poses in the FIRST ${animation.durations.length} of EIGHT equal 192px-wide slots, left to right. All remaining slots entirely transparent. Each pose stays strictly inside its own slot with at least 12px horizontal padding. Normal standing feet share y=680; preserve the same body scale across every pose and state, approximately 300px tall. Keep the entire silhouette between y=312 and y=712 except the airborne jump. State: ${animation.name}. ${animation.action} Each frame must visibly advance the action, not duplicate a still. No grid, labels, text, backdrop, ground, shadows, glows, dust, detached effects or extra characters. Keep weapons/props within their slot. Genuine transparent empty space, never a checkerboard.`
         const image = await generateImage(this.env.OPENAI_API_KEY, userId, prompt, '1536x1024', [new Uint8Array(await base.arrayBuffer()), layoutGuide(index)])
+        // Keep the latest rejected raw row privately for owner diagnosis. Do not
+        // throw away a paid provider response before inspecting its geometry.
+        const rejectedKey = `${prefix}/rejected.png`
+        await this.env.AVATAR_BUCKET.put(rejectedKey, image, { httpMetadata: { contentType: 'image/png' } })
         const bounds = inspectStrip(image, index)
         const key = `${prefix}/row-${index}.png`
         await this.env.AVATAR_BUCKET.put(key, image, { httpMetadata: { contentType: 'image/png' } })
+        await this.env.AVATAR_BUCKET.delete(rejectedKey)
         job.rows.push({ key, bounds })
       } else {
         const image = await assembleAtlas(job.rows, async key => {

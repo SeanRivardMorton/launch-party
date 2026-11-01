@@ -49,7 +49,14 @@ owned by the existing scene components.
   to produce final atlas geometry. One shared nearest-neighbor transform preserves
   scale/baseline across all rows and retains jumping displacement. Unused cells
   and transparent RGB are zero. Bad dimensions, non-RGBA output, empty/opaque,
-  clipped, extra or exactly duplicated frames fail safely. These checks do not
+  genuinely canvas-clipped, missing/extra or exactly duplicated frames fail safely.
+  Extraction detects alpha-connected silhouettes, groups body/equipment fragments
+  and ignores small detached noise; it does not reject a complete pose merely for
+  crossing a model-generated nominal grid line. Source bounding boxes are persisted
+  with each row so assembly crops the detected pose rather than guessing slots.
+  A rejected raw row is retained privately under `staging/` for an owner-only
+  preview link when available; old failures predating this retention have no preview.
+  These checks do not
   prove correct identity/gait: real output still requires visual QA.
 - Two atomic attempt reservations/account, including failed provider attempts.
   Concurrent starts are rejected; each completed/started row renews a three-minute
@@ -73,6 +80,13 @@ guild/signup routes owned by another agent. It was inspected **read-only**.
 There is no parent branch/PR with an authenticated membership contract to stack
 on. Its `guilds` is a public directory; interest records are private and do not
 prove an authenticated user's membership.
+
+During the animation follow-up, the committed guild directory/recruitment and
+shared UI work landed on `main` and was merged into this task branch. Shared
+README/package/lockfile conflicts were resolved and the route tree regenerated;
+the full local checks passed afterward. This integrates committed work, not the
+other checkout's uncommitted files. The authenticated membership grant remains
+unimplemented and is still the integration blocker.
 
 Migration `0005_live_campfire.sql` deliberately does **not** create/redefine
 `guilds`, modify interest records or depend on uncommitted migrations. It owns:
@@ -174,12 +188,13 @@ pnpm test:browser
 ```
 
 Verified locally:
-- 17 Vitest checks: malformed/spoofed/oversized frames, movement bounds/speed,
+- 18 Vitest checks: malformed/spoofed/oversized frames, movement bounds/speed,
   token bucket/clock rollback, public projection, origin/session query boundary,
   new-instance attachment recovery, passive viewer revocation, emote/snapshot
   delivery, credential-unavailable and forced mocked provider-500 failure, actual SQLite duplicate/stale/attempt
   fencing behavior, atlas timings/state selection, malformed/static strips,
-  exact deterministic atlas geometry/transparency/jumping displacement, and an
+  exact deterministic atlas geometry/transparency/jumping displacement, complete
+  poses crossing nominal slot lines with detached noise, and an
   entire mocked ten-request job resumed in a fresh instance on every step.
 - Three Playwright tests, including real local Better Auth, D1, Worker and DO WebSockets:
   two accounts see movement/emotes/cards; desktop keyboard; mobile tap; reduced

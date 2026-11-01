@@ -16,8 +16,10 @@ export async function campfireApi(request: Request, env: Cloudflare.Env) {
     const profile = await getProfile(env.DB, userId)
     const memberships = await env.DB.prepare('SELECT guild_id FROM campfire_memberships WHERE user_id=? ORDER BY guild_id').bind(userId).all<{ guild_id: string }>()
     await env.DB.prepare(`UPDATE campfire_avatars SET state='failed', updated_at=? WHERE user_id=? AND state='pending' AND updated_at<?`).bind(Date.now(), userId, Date.now() - STALE_MS).run()
-    const avatar = await env.DB.prepare('SELECT state, attempts, progress, total_steps, error_code FROM campfire_avatars WHERE user_id=?').bind(userId).first()
-    return json({ profile: profile ? { ...card(profile), published: !!profile.published } : null, guilds: memberships.results.map(m => m.guild_id), avatar: avatar || { state: 'not_requested', attempts: 0 }, generationEnabled: !!env.OPENAI_API_KEY && env.AVATAR_GENERATION_ENABLED === 'true' })
+    const avatar = await env.DB.prepare('SELECT state, attempts, progress, total_steps, error_code, token FROM campfire_avatars WHERE user_id=?').bind(userId).first<{ state: string; attempts: number; progress: number; total_steps: number; error_code: string | null; token: string | null }>()
+    const previewAvailable = avatar?.state === 'failed' && !!avatar.token && !!await env.AVATAR_BUCKET.head(`staging/${userId}/${avatar.token}/rejected.png`)
+    const summary = avatar ? { state: avatar.state, attempts: avatar.attempts, progress: avatar.progress, total_steps: avatar.total_steps, error_code: avatar.error_code, previewAvailable } : { state: 'not_requested', attempts: 0 }
+    return json({ profile: profile ? { ...card(profile), published: !!profile.published } : null, guilds: memberships.results.map(m => m.guild_id), avatar: summary, generationEnabled: !!env.OPENAI_API_KEY && env.AVATAR_GENERATION_ENABLED === 'true' })
   }
   if (path === '/profile' && request.method === 'PUT') {
     let input: unknown
@@ -46,6 +48,13 @@ export async function campfireApi(request: Request, env: Cloudflare.Env) {
       return json({ error: 'Could not start generation. Your fallback remains usable.' }, 503)
     }
     return json({ state: 'pending' }, 202)
+  }
+  if (path === '/generation-preview' && request.method === 'GET') {
+    const row = await env.DB.prepare(`SELECT token FROM campfire_avatars WHERE user_id=? AND state='failed'`).bind(userId).first<{ token: string }>()
+    if (!row?.token) return new Response('No rejected row available', { status: 404 })
+    const object = await env.AVATAR_BUCKET.get(`staging/${userId}/${row.token}/rejected.png`)
+    if (!object) return new Response('No rejected row available', { status: 404 })
+    return new Response(object.body, { headers: { 'content-type': 'image/png', 'cache-control': 'private, no-store', 'x-content-type-options': 'nosniff' } })
   }
   const avatarMatch = /^\/avatar\/([^/]+)$/.exec(path)
   if (avatarMatch && request.method === 'GET') {

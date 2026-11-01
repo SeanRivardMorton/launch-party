@@ -5,8 +5,14 @@ import { authClient } from '@/lib/auth-client'
 import { SpriteSheet } from './sprite-sheet'
 import './guild-campfire.css'
 
-type Me = { profile: (Card & { published: boolean }) | null; guilds: string[]; avatar: { state: string; attempts: number; progress?: number; total_steps?: number; error_code?: string }; generationEnabled: boolean }
+type Me = { profile: (Card & { published: boolean }) | null; guilds: string[]; avatar: { state: string; attempts: number; progress?: number; total_steps?: number; error_code?: string; previewAvailable?: boolean }; generationEnabled: boolean }
 const symbols = { wave: '👋', cheer: '✨', heart: '♥' }
+const generationErrors: Record<string, string> = {
+  clipped_frames: 'a pose was cut off at the image edge', wrong_frame_count: 'the pose row did not contain every required frame',
+  static_frames: 'the provider returned repeated still frames', provider_key: 'the API key was rejected',
+  provider_access: 'the image model is unavailable to this project', provider_limit: 'the provider reported a billing or rate limit',
+  provider_timeout: 'the image request timed out', interrupted_step: 'generation was interrupted; the request was not billed again',
+}
 async function api<T = { error?: string }>(path: string, method = 'GET', body?: unknown): Promise<T> {
   const response = await fetch(`/api/campfire/${path}`, { method, headers: body ? { 'content-type': 'application/json' } : undefined, body: body ? JSON.stringify(body) : undefined })
   const data = await response.json() as T & { error?: string }
@@ -191,7 +197,7 @@ export function GuildCampfireScreen() {
           setGenerationBusy(true)
           try { await api('generate', 'POST'); await refresh() } catch (e) { setError((e as Error).message) } finally { setGenerationBusy(false) }
         }}>{me.avatar.state === 'pending' ? `Creating frames ${me.avatar.progress || 0}/${me.avatar.total_steps || 11}…` : 'Create animated sprite'}</button></nav>
-        <p className="guild-art-status" role="status">{error || (me.avatar.state === 'ready' ? me.profile.avatarFormat === 'codex-pet-v1' ? 'Saved animated sprite sheet · 9 animation rows' : 'Saved single-frame artwork · generate a new sheet for animation' : me.avatar.state === 'pending' ? 'Building animation rows · existing sprite stays usable' : `${me.profile.avatarUrl ? 'Saved artwork' : 'Hand-drawn fallback sprite'} · ${me.avatar.state === 'failed' ? `generation failed (${me.avatar.error_code || 'unavailable'})` : 'AI generation optional'}`)} · {me.avatar.attempts}/2 attempts</p>
+        <p className="guild-art-status" role="status">{error || (me.avatar.state === 'ready' ? me.profile.avatarFormat === 'codex-pet-v1' ? 'Saved animated sprite sheet · 9 animation rows' : 'Saved single-frame artwork · generate a new sheet for animation' : me.avatar.state === 'pending' ? 'Building animation rows · existing sprite stays usable' : `${me.profile.avatarUrl ? 'Saved artwork' : 'Hand-drawn fallback sprite'} · ${me.avatar.state === 'failed' ? `Generation stopped: ${generationErrors[me.avatar.error_code || ''] || 'the generated row could not be used'}` : 'AI generation optional'}`)} · {me.avatar.attempts}/2 attempts {me.avatar.previewAvailable && <a href="/api/campfire/generation-preview" target="_blank" rel="noreferrer">· Inspect rejected pose row ↗</a>}</p>
         {me.generationEnabled && me.avatar.state !== 'pending' && me.avatar.attempts < 2 && <p className="guild-generation-note">One sheet uses up to 10 billable image requests and may take several minutes. Existing sprites are kept if generation fails.</p>}
         {guild && me.profile.published ? <Scene key={guild} guildId={guild} avatarRevision={me.profile.avatarUrl} /> : <section className="guild-welcome"><h2>{!me.profile.published ? 'Publish your character to enter.' : 'Your character is ready.'}</h2><p>{!me.profile.published ? 'Choose Edit character to share your character plan with guild members.' : 'Guild membership has not been linked to your account yet. Your saved character and fallback sprite are ready for the guild onboarding handoff.'}</p></section>}
       </>}
