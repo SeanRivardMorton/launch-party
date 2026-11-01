@@ -20,6 +20,7 @@ import { Route as ApiInterestRouteImport } from './routes/api/interest'
 import { Route as GuildsIndexRouteImport } from './routes/guilds/index'
 import { Route as GuildsGuildIdRouteImport } from './routes/guilds/$guildId'
 import { Route as GuildsNewRouteImport } from './routes/guilds/new'
+import { Route as ApiAccountOverviewRouteImport } from './routes/api/account/overview'
 import { Route as ApiAuthSplatRouteImport } from './routes/api/auth/$'
 import { Route as ApiGuildsGuildIdRouteImport } from './routes/api/guilds/$guildId'
 import { Route as GuildsGuildIdApplyRouteImport } from './routes/guilds/$guildId_.apply'
@@ -81,6 +82,11 @@ const GuildsNewRoute = GuildsNewRouteImport.update({
   path: '/guilds/new',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ApiAccountOverviewRoute = ApiAccountOverviewRouteImport.update({
+  id: '/api/account/overview',
+  path: '/api/account/overview',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const ApiAuthSplatRoute = ApiAuthSplatRouteImport.update({
   id: '/api/auth/$',
   path: '/api/auth/$',
@@ -120,6 +126,7 @@ export interface FileRoutesByFullPath {
   '/guilds/$guildId': typeof GuildsGuildIdRoute
   '/guilds/new': typeof GuildsNewRoute
   '/guilds/': typeof GuildsIndexRoute
+  '/api/account/overview': typeof ApiAccountOverviewRoute
   '/api/auth/$': typeof ApiAuthSplatRoute
   '/api/guilds/$guildId': typeof ApiGuildsGuildIdRouteWithChildren
   '/guilds/$guildId/apply': typeof GuildsGuildIdApplyRoute
@@ -138,6 +145,7 @@ export interface FileRoutesByTo {
   '/guilds/$guildId': typeof GuildsGuildIdRoute
   '/guilds/new': typeof GuildsNewRoute
   '/guilds': typeof GuildsIndexRoute
+  '/api/account/overview': typeof ApiAccountOverviewRoute
   '/api/auth/$': typeof ApiAuthSplatRoute
   '/api/guilds/$guildId': typeof ApiGuildsGuildIdRouteWithChildren
   '/guilds/$guildId/apply': typeof GuildsGuildIdApplyRoute
@@ -157,6 +165,7 @@ export interface FileRoutesById {
   '/guilds/$guildId': typeof GuildsGuildIdRoute
   '/guilds/new': typeof GuildsNewRoute
   '/guilds/': typeof GuildsIndexRoute
+  '/api/account/overview': typeof ApiAccountOverviewRoute
   '/api/auth/$': typeof ApiAuthSplatRoute
   '/api/guilds/$guildId': typeof ApiGuildsGuildIdRouteWithChildren
   '/guilds/$guildId_/apply': typeof GuildsGuildIdApplyRoute
@@ -177,6 +186,7 @@ export interface FileRouteTypes {
     | '/guilds/$guildId'
     | '/guilds/new'
     | '/guilds/'
+    | '/api/account/overview'
     | '/api/auth/$'
     | '/api/guilds/$guildId'
     | '/guilds/$guildId/apply'
@@ -195,6 +205,7 @@ export interface FileRouteTypes {
     | '/guilds/$guildId'
     | '/guilds/new'
     | '/guilds'
+    | '/api/account/overview'
     | '/api/auth/$'
     | '/api/guilds/$guildId'
     | '/guilds/$guildId/apply'
@@ -213,6 +224,7 @@ export interface FileRouteTypes {
     | '/guilds/$guildId'
     | '/guilds/new'
     | '/guilds/'
+    | '/api/account/overview'
     | '/api/auth/$'
     | '/api/guilds/$guildId'
     | '/guilds/$guildId_/apply'
@@ -232,6 +244,7 @@ export interface RootRouteChildren {
   GuildsGuildIdRoute: typeof GuildsGuildIdRoute
   GuildsNewRoute: typeof GuildsNewRoute
   GuildsIndexRoute: typeof GuildsIndexRoute
+  ApiAccountOverviewRoute: typeof ApiAccountOverviewRoute
   ApiAuthSplatRoute: typeof ApiAuthSplatRoute
   GuildsGuildIdApplyRoute: typeof GuildsGuildIdApplyRoute
   GuildsGuildIdManageRoute: typeof GuildsGuildIdManageRoute
@@ -316,6 +329,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof GuildsNewRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/api/account/overview': {
+      id: '/api/account/overview'
+      path: '/api/account/overview'
+      fullPath: '/api/account/overview'
+      preLoaderRoute: typeof ApiAccountOverviewRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/api/auth/$': {
       id: '/api/auth/$'
       path: '/api/auth/$'
@@ -389,6 +409,7 @@ const rootRouteChildren: RootRouteChildren = {
   GuildsGuildIdRoute: GuildsGuildIdRoute,
   GuildsNewRoute: GuildsNewRoute,
   GuildsIndexRoute: GuildsIndexRoute,
+  ApiAccountOverviewRoute: ApiAccountOverviewRoute,
   ApiAuthSplatRoute: ApiAuthSplatRoute,
   GuildsGuildIdApplyRoute: GuildsGuildIdApplyRoute,
   GuildsGuildIdManageRoute: GuildsGuildIdManageRoute,

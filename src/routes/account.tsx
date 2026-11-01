@@ -5,6 +5,7 @@ import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { authClient } from '@/lib/auth-client'
 import { requireAccount } from '@/lib/auth.functions'
+import { CharacterOverview } from '@/components/account-overview'
 
 export const Route = createFileRoute('/account')({
   beforeLoad: async () => ({ user: await requireAccount() }),
@@ -16,6 +17,7 @@ export const Route = createFileRoute('/account')({
 function AccountPage() {
   const { user } = Route.useRouteContext()
   const session = authClient.useSession()
+  const currentUser = session.data?.user || user
   const [pending, setPending] = useState<'save' | 'signout' | null>(null)
   const [message, setMessage] = useState('')
   const [error, setError] = useState('')
@@ -49,18 +51,23 @@ function AccountPage() {
     } catch { setError('Connection interrupted. Please try signing out again.'); setPending(null) }
   }
 
+  if (!session.isPending && (session.error || !session.data)) return <AccountShell><h1 id="account-title">Account session unavailable</h1><p role="alert">{session.error ? 'Couldn’t verify your session. Your private details are hidden.' : 'Your session has expired.'}</p><Button onClick={() => void session.refetch()}>Retry session</Button><a href="/login?returnTo=%2Faccount">Sign in again</a></AccountShell>
+
   return <AccountShell>
     <div className="dialog-kicker">AI-ZEROTH · PRIVATE ACCOUNT</div>
-    <h1 id="account-title">A place of your own.</h1>
-    <p className="dialog-description">Manage your account details. Your account email stays private; this isn’t a published player card or verified Battle.net identity.</p>
-    <p className="account-email"><span>Account email</span><strong>{user.email}</strong></p>
-    <form method="post" onSubmit={save} aria-busy={pending === 'save'}>
-      <label htmlFor="profile-name">Name or nickname<Input id="profile-name" name="name" autoComplete="nickname" defaultValue={user.name} required maxLength={60} /></label>
+    <h1 id="account-title">Your characters & guilds.</h1>
+    <p className="dialog-description">Your saved characters and approved guilds.</p>
+    <CharacterOverview active={!session.isPending && !session.error && session.data ? session.data.user.id : false} />
+    <section id="account-settings" className="account-section" aria-labelledby="settings-title"><h2 id="settings-title">Account settings</h2>
+    <p className="account-note">This account name is not your character name. Changing it does not change saved characters. Your email stays private and is not a verified Battle.net identity.</p>
+    <p className="account-email"><span>Account email</span><strong>{currentUser.email}</strong></p>
+    <form key={currentUser.email} method="post" onSubmit={save} aria-busy={pending === 'save'}>
+      <label htmlFor="profile-name">Name or nickname<Input id="profile-name" name="name" autoComplete="nickname" defaultValue={currentUser.name} required maxLength={60} /></label>
       <div className="form-actions"><Button type="submit" disabled={!ready || Boolean(pending)}>{pending === 'save' ? 'Saving…' : 'Save account name'}</Button></div>
     </form>
     {message && <p className="account-note" role="status">{message}</p>}
     {error && <p className="form-error" role="alert">{error}</p>}
-    <p className="account-note">Player cards and matching are still on the way. <a href="/guilds">Explore public guilds</a> or <a href="/signup">join the separate interest list</a>. Neither creates guild membership.</p>
+    </section>
     <div className="account-footer"><a href="/">Back to the campfire</a><Button variant="outline" disabled={!ready || Boolean(pending)} onClick={signOut}>{pending === 'signout' ? 'Signing out…' : 'Sign out'}</Button></div>
   </AccountShell>
 }

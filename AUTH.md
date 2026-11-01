@@ -4,8 +4,8 @@
 
 - `/register` creates a Better Auth email/password account and signs it in.
 - `/login` signs in an existing account. Interest-list subscribers must create an account separately.
-- `/account` is server-protected. It displays only the current account's email/name, saves the account name through Better Auth's authenticated `updateUser` endpoint, and signs out through Better Auth.
-- The landing/account headers offer **Sign in** or **My account** based on the live session. Account pages also react to session loss after the client refreshes session state.
+- `/account` is server-protected. It shows the owner's saved campfire character (including unpublished data and saved artwork), all approved per-guild character snapshots, memberships and separately labeled pending/declined applications. Account settings retain the private email, account-name update and signout. Account name is explicitly separate from character nicknames.
+- The landing/account headers offer **Sign in** or an accessible **My account** disclosure based on the live session. The disclosure links to characters, guilds, approved guild halls/campfires, account settings and signout. Native links support Tab; arrows/Home/End navigate actions, Escape restores trigger focus, and outside clicks/focus dismiss it. No account email or BattleTag appears in navigation.
 - Registration and login accept `returnTo` for internal app pages (default `/account`). External URLs, protocol-relative paths, backslashes, malformed encoding, auth loops and API paths are rejected. The destination is checked again before navigation.
 - Pending buttons prevent repeated submissions; errors retain input and authentication errors receive focus. Password visibility is an explicit toggle. Forms use POST and submit buttons stay disabled until hydration, preventing early/default GET submissions of credentials.
 
@@ -21,6 +21,10 @@ Better Auth owns credential hashing, D1 session storage, cookie issuance/refresh
 
 Missing DB/auth configuration, or a failed session lookup, produces an unavailable account state. Missing configuration also retains the existing HTTP 503 auth endpoint behavior. Public interest and guild functionality does not depend on auth configuration.
 
+`GET /api/account/overview` is an independently authenticated, owner-only endpoint with `Cache-Control: private, no-store` on success and errors. Identity comes exclusively from Better Auth request headers; query-string user IDs are ignored. Its explicit DTO contains character fields and guild names/IDs/ranks, never raw rows, email, BattleTags, avatar storage keys or generation/session tokens. It reads only `guild_memberships`, the owner's non-approved applications and their own `campfire_profiles`/artwork. Neither interest emails, legacy management keys nor campfire-only grants establish a guild membership. Campfire links require both a real guild membership and its current campfire grant; older approved memberships can sync that grant by opening the existing guild hall.
+
+Saved campfire characters have no fulfillable-role field, so the overview says it is not collected rather than inventing roles from class. Guild characters show their actual saved roles. These independent profiles are never silently synchronized or selected as a canonical character. Artwork uses the existing authenticated avatar endpoint; animated sheets show their first frame. Missing artwork, image failure/retry, no character/membership/application, loading, network/server failure/retry and expired sessions have distinct states. Client results are discarded when the session identity changes or the disclosure closes; no private overview cache/localStorage is introduced.
+
 No OAuth, reset-password or verification actions are shown because there are no configured providers or email delivery. The UI states that password recovery/verification are unavailable. Account screens require JavaScript. Like the current public forms, short/mobile-keyboard/landscape viewports can scroll **inside the content area**, with a fixed document and no horizontal clipping; this is not completion of the PRD's future all-screens/no-scroll milestone.
 
 ## Repeatable local verification
@@ -34,6 +38,7 @@ pnpm exec playwright install chromium
 pnpm dev --port 3119
 # In another terminal in this worktree:
 pnpm test:auth
+AUTH_TEST_ORIGIN=http://localhost:3119 pnpm test:account
 pnpm check
 pnpm build
 ```
@@ -52,6 +57,12 @@ Verified on 1 November 2026:
 - Missing configuration: with the local secret empty and a dev server on port 3120, `AUTH_TEST_ORIGIN=http://localhost:3120 AUTH_TEST_UNAVAILABLE=1 pnpm test:auth` verifies friendly unavailable UI, no credential form, auth HTTP 503, anonymous protected-route rejection and usable public signup. Restore the local secret/origin and restart afterward.
 
 These are local checks, not a production deployment or a claim that every PRD feature is implemented. Browser checks require the documented local configuration and are run explicitly; the existing PR CI runs typecheck/build.
+
+### Logged-in overview verification
+
+`pnpm test:account` defaults to a separate local origin on port 3137 (override with `AUTH_TEST_ORIGIN`, matching `.dev.vars`). It creates synthetic Better Auth accounts in independent Chromium contexts and local D1 fixtures, plus a tiny synthetic saved image in local R2. It checks two approved guild profiles, a separate pending application, a differently named unpublished campfire profile, image loading/owner access, reload persistence, account-name separation, outsider/anonymous isolation, ignored client IDs, non-import of matching interest emails and non-membership campfire grants. Browser checks cover both editors, disclosure keyboard/focus/Escape/outside dismissal, landing/account mobile bounds at 320/390px, landscape reachability, both menu themes, explicit loading, 503/network retry, expired responses, actual D1 session expiry and signout revocation. The script removes its local synthetic account/guild/interest/artwork fixtures. Screenshots remain ignored under `test-results/`. Unit tests additionally exercise actual SQLite ownership queries, removed memberships, DTO stripping, unpublished avatar metadata and corrupt/unavailable storage failing instead of appearing empty.
+
+The auth regression script now reflects the merged guild contract: publishing requires an account, while the directory, QR and interest signup remain anonymous. No production secrets, data, resource provisioning or deployment are used.
 
 ## Campfire follow-up (PR #4)
 
