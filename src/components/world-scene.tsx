@@ -1,4 +1,7 @@
 const stars = Array.from({ length: 45 }, (_, i) => ({ x: (i * 193 + 37) % 1440, y: (i * 83 + 19) % 530, size: i % 7 === 0 ? 3 : 1.5 }))
+const distantTrees = [[-30, 400, 175], [85, 450, 160], [210, 490, 130], [325, 534, 100], [1040, 510, 120], [1140, 448, 155], [1250, 392, 195], [1370, 430, 180]]
+const foregroundTrees = [[-100, 270, 280, 630], [25, 510, 165, 390], [1250, 320, 260, 585], [1215, 570, 130, 325]]
+const grassTufts = ['M275 825h6v-14h4v14h9v-8h4v15h-23z', 'M1125 797h4v-14h5v14h8v-7h4v14h-21z', 'M195 873h5v-12h5v12h9v-19h4v26h-23z', 'M1225 869h4v-8h6v8h7v-16h5v23h-22z']
 
 export function WorldScene() {
   return <svg className="world-scene" viewBox="0 0 1440 900" preserveAspectRatio="xMidYMax slice" aria-hidden="true" shapeRendering="crispEdges">
@@ -9,17 +12,19 @@ export function WorldScene() {
       <symbol id="pine" viewBox="0 0 80 180"><path d="M36 152h8v28h-8zM36 0h8v14h8v18h8v14H48v8h16v18h8v15H53v8h19v18h8v24H0v-24h8V95h19v-8H8V72h8V54h16v-8H20V32h8V14h8z" fill="currentColor" /><path d="M40 14h4v18h8v14H40v8h12v18h8v15H40v8h20v18h8v24H40z" fill="#000" opacity=".12" /></symbol>
     </defs>
     <path fill="url(#sky)" d="M0 0h1440v900H0z" />
-    {stars.map((star, i) => <rect key={i} x={star.x} y={star.y} width={star.size} height={star.size} fill="var(--moon)" opacity={i % 3 === 0 ? '.55' : '.2'} />)}
-    <circle cx="1160" cy="182" r="145" fill="url(#moon-halo)" />
-    <path d="M1144 132h32v8h12v12h8v32h-8v12h-12v8h-32v-8h-12v-12h-8v-32h8v-12h12z" fill="var(--moon)" opacity=".8" />
-    <path d="M1158 132h18v8h12v12h8v32h-8v12h-12v8h-18v-10h-12v-14h-6v-26h8v-12h10z" fill="var(--sky-top)" />
+    {stars.map((star, i) => <rect key={i} className={i % 3 === 0 ? 'scene-star' : undefined} style={{ animationDelay: `${-i * .73}s`, animationDuration: `${4 + i % 5}s` }} x={star.x} y={star.y} width={star.size} height={star.size} fill="var(--moon)" opacity={i % 3 === 0 ? '.55' : '.2'} />)}
+    <g className="scene-moon">
+      <circle className="scene-moon-halo" cx="1160" cy="182" r="145" fill="url(#moon-halo)" />
+      <path d="M1144 132h32v8h12v12h8v32h-8v12h-12v8h-32v-8h-12v-12h-8v-32h8v-12h12z" fill="var(--moon)" opacity=".8" />
+      <path d="M1158 132h18v8h12v12h8v32h-8v12h-12v8h-18v-10h-12v-14h-6v-26h8v-12h10z" fill="var(--sky-top)" />
+    </g>
     <path d="M0 565h90v-30h75v-34h65v-43h45v-32h65v40h55v45h95v40h80v-32h90v-55h80v-24h45v-26h60v40h55v28h60v38h100v-25h55v-58h55v-49h45v-31h55v47h45v48h75v36h80v357H0z" fill="var(--mountain-far)" />
     <path d="M0 670h110v-55h100v-30h130v38h70v25h95v-45h120v-35h90v-22h100v40h90v55h120v-32h80v-32h80v-20h115v65h120v278H0z" fill="var(--mountain-near)" />
-    <g color="var(--forest-far)">{[[-30, 400, 175], [85, 450, 160], [210, 490, 130], [325, 534, 100], [1040, 510, 120], [1140, 448, 155], [1250, 392, 195], [1370, 430, 180]].map(([x, y, h], i) => <use key={i} href="#pine" x={x} y={y} width={h * .65} height={h * 1.8} />)}</g>
+    <g color="var(--forest-far)">{distantTrees.map(([x, y, h], i) => <g key={i} className="scene-tree scene-tree-distant" style={{ animationDelay: `${-i * 1.1}s`, animationDuration: `${7 + i % 3}s` }}><use href="#pine" x={x} y={y} width={h * .65} height={h * 1.8} /></g>)}</g>
     <path d="M0 778h120v-15h130v-14h170v-10h170v-8h240v8h180v10h170v16h140v12h120v123H0z" fill="var(--ground)" />
     <path d="M340 900v-26h140v-22h110v-17h90v-16h110v16h130v17h100v22h100v26z" fill="var(--path)" />
-    <g color="var(--forest-front)"><use href="#pine" x="-100" y="270" width="280" height="630" /><use href="#pine" x="25" y="510" width="165" height="390" /><use href="#pine" x="1250" y="320" width="260" height="585" /><use href="#pine" x="1215" y="570" width="130" height="325" /></g>
-    <g fill="var(--grass)"><path d="M275 825h6v-14h4v14h9v-8h4v15h-23zm850-28h4v-14h5v14h8v-7h4v14h-21zM195 873h5v-12h5v12h9v-19h4v26h-23zm1030-4h4v-8h6v8h7v-16h5v23h-22z" /><path d="M435 785h12v3h-12zm500 10h16v3h-16zM315 858h18v3h-18zm770 19h12v3h-12z" /></g>
+    <g color="var(--forest-front)">{foregroundTrees.map(([x, y, width, height], i) => <g key={i} className="scene-tree" style={{ animationDelay: `${-i * 1.7}s`, animationDuration: `${6 + i % 3}s` }}><use href="#pine" x={x} y={y} width={width} height={height} /></g>)}</g>
+    <g fill="var(--grass)">{grassTufts.map((d, i) => <path key={i} className="scene-grass" style={{ animationDelay: `${-i * .9}s`, animationDuration: `${3.2 + i * .4}s` }} d={d} />)}<path d="M435 785h12v3h-12zm500 10h16v3h-16zM315 858h18v3h-18zm770 19h12v3h-12z" /></g>
     <ellipse className="campfire-glow" cx="723" cy="801" rx="140" ry="65" fill="url(#fire-halo)" />
     <g className="campfire">
       <path className="campfire-stones" d="M701 811h45v5h-45zM710 806h29v5h-29z" fill="#45483e" />

@@ -82,7 +82,15 @@ h1 em { font-weight: 400; color: var(--accent); }
 .campfire-flame { opacity: 0; }
 .campfire-flame-rest { opacity: 1; }
 .campfire-ember { opacity: .65; }
+/* Root the wind motion at each tree/tuft rather than sliding the landscape. */
+.scene-tree, .scene-grass { transform-box: fill-box; transform-origin: center bottom; }
 @media(prefers-reduced-motion:no-preference) {
+  .scene-star { animation: scene-twinkle 6s steps(4, end) infinite; }
+  .scene-moon { animation: scene-moon-drift 16s steps(4, end) infinite; }
+  .scene-moon-halo { animation: scene-moon-glow 10s steps(8, end) infinite; }
+  .scene-tree { animation: scene-tree-sway 7s steps(6, end) infinite; }
+  .scene-tree-distant { animation-name: scene-distant-sway; }
+  .scene-grass { animation: scene-grass-sway 4s steps(4, end) infinite; }
   .campfire-flame { animation: campfire-flicker 1.2s steps(1, end) infinite; }
   .campfire-flame-low { animation-delay: -.4s; }
   .campfire-flame-high { animation-delay: -.8s; }
@@ -91,6 +99,12 @@ h1 em { font-weight: 400; color: var(--accent); }
   .campfire-ember:nth-child(2) { animation-duration: 3.8s; animation-delay: -1.3s; }
   .campfire-ember:nth-child(3) { animation-duration: 2.8s; animation-delay: -2.1s; }
 }
+@keyframes scene-twinkle { 0%,100% { opacity: .2; } 40% { opacity: .75; } 65% { opacity: .4; } }
+@keyframes scene-moon-drift { 0%,100% { transform: translateY(0); } 50% { transform: translateY(-4px); } }
+@keyframes scene-moon-glow { 0%,100% { opacity: .65; } 50% { opacity: 1; } }
+@keyframes scene-tree-sway { 0%,100% { transform: skewX(-.4deg); } 50% { transform: skewX(.4deg); } }
+@keyframes scene-distant-sway { 0%,100% { transform: skewX(-.25deg); } 50% { transform: skewX(.25deg); } }
+@keyframes scene-grass-sway { 0%,100% { transform: skewX(-5deg); } 50% { transform: skewX(7deg); } }
 @keyframes campfire-flicker { 0% { opacity: 1; } 33.333%,100% { opacity: 0; } }
 @keyframes campfire-glow { 0%,100% { opacity: .8; } 35% { opacity: 1; } 70% { opacity: .7; } }
 @keyframes campfire-ember {
