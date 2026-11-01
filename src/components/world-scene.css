@@ -1,0 +1,4 @@
+/* Portrait crops the central 500-ish world units; retain regional edge landmarks
+   without moving the fire, interactive characters, or the QR presentation. */
+.regional-mobile { display: none; }
+@media(max-width:600px) { .regional-mobile { display: inline; } }

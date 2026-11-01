@@ -1,8 +1,9 @@
 import { createFileRoute } from '@tanstack/react-router'
-import { useEffect, useState } from 'react'
-import { ArrowRight, Moon, Plus, Sun, Users } from 'lucide-react'
+import { useState } from 'react'
+import { ArrowRight, Plus, Users } from 'lucide-react'
 import { QRCodeSVG } from 'qrcode.react'
-import { Button } from '@/components/ui/button'
+import { ThemePicker } from '@/components/theme-picker'
+import { useSceneTheme } from '@/components/use-scene-theme'
 import { PixelCharacter } from '@/components/pixel-character'
 import { WorldScene } from '@/components/world-scene'
 import { AuthNav } from '@/components/auth-nav'
@@ -16,25 +17,15 @@ const adventurers = [
 ]
 
 function LandingPage() {
-  const [theme, setTheme] = useState('moonwell')
+  const { theme, preference, choose, style, ready } = useSceneTheme()
   const [selected, setSelected] = useState(0)
 
-  useEffect(() => {
-    try { const stored = localStorage.getItem('ai-zeroth-theme'); if (stored === 'moonwell' || stored === 'tavern') setTheme(stored) } catch { /* Storage is optional. */ }
-  }, [])
-
-  function toggleTheme() {
-    const next = theme === 'tavern' ? 'moonwell' : 'tavern'
-    setTheme(next)
-    try { localStorage.setItem('ai-zeroth-theme', next) } catch { /* Storage is optional. */ }
-  }
-
-  return <div className="site" data-theme={theme}>
-    <WorldScene />
+  return <div className="site" data-theme={theme} style={style}>
+    <WorldScene theme={theme} />
     <div className="screen-grain" aria-hidden="true" />
     <header className="site-header">
       <a className="brand" href="/" aria-label="ai-zeroth home"><span className="brand-rune" aria-hidden="true">✧</span></a>
-      <div className="header-right"><AuthNav /><a className="button button-ghost button-sm" href="/guilds" aria-label="Browse guilds"><Users size={18} /></a><Button variant="ghost" size="sm" onClick={toggleTheme} aria-label={`Switch to ${theme === 'tavern' ? 'moonwell' : 'tavern'} theme`}>{theme === 'tavern' ? <Moon size={16} /> : <Sun size={16} />}</Button><a className="header-link" href="https://worldofwarcraft.blizzard.com/en-gb/forever" target="_blank" rel="noreferrer" aria-label="For WoW Forever"><ArrowRight size={13} /></a></div>
+      <div className="header-right"><AuthNav /><a className="button button-ghost button-sm" href="/guilds" aria-label="Browse guilds"><Users size={18} /></a><ThemePicker value={preference} onChange={choose} ready={ready} /><a className="header-link" href="https://worldofwarcraft.blizzard.com/en-gb/forever" target="_blank" rel="noreferrer" aria-label="For WoW Forever"><ArrowRight size={13} /></a></div>
     </header>
 
     <main className="world" id="main">

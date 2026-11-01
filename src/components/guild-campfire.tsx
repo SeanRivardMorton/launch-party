@@ -4,6 +4,10 @@ import { emotes, position, WORLD, type Card, type ClientMessage, type Peer, type
 import { authClient } from '@/lib/auth-client'
 import { SpriteSheet } from './sprite-sheet'
 import './guild-campfire.css'
+import { WorldScene } from './world-scene'
+import { ThemePicker } from './theme-picker'
+import { useSceneTheme } from './use-scene-theme'
+import type { SceneTheme } from '@/lib/scene-themes'
 
 type Me = { profile: (Card & { published: boolean }) | null; guilds: string[]; avatar: { state: string; attempts: number; progress?: number; total_steps?: number; error_code?: string; previewAvailable?: boolean }; generationEnabled: boolean }
 const symbols = { wave: '👋', cheer: '✨', heart: '♥' }
@@ -57,7 +61,7 @@ function Sprite({ peer, offset, onSelect }: { peer: Peer; offset: number; onSele
   </button>
 }
 
-function Scene({ guildId, avatarRevision }: { guildId: string; avatarRevision: string | null }) {
+function Scene({ guildId, avatarRevision, theme }: { guildId: string; avatarRevision: string | null; theme: SceneTheme }) {
   const [peers, setPeers] = useState<Record<string, Peer>>({})
   const [self, setSelf] = useState('')
   const [status, setStatus] = useState('Connecting…')
@@ -137,8 +141,7 @@ function Scene({ guildId, avatarRevision }: { guildId: string; avatarRevision: s
         const point = position(mine.motion, Date.now() + offset)
         send({ type: 'move', x: point.x + delta[0], y: point.y + delta[1] })
       }}>
-      <div className="guild-moon" aria-hidden="true" />
-      <div className="guild-trees" aria-hidden="true">♠ ♠ ♠ ♠ ♠ ♠ ♠ ♠ ♠ ♠ ♠</div>
+      <WorldScene theme={theme} sceneryOnly />
       <div className="guild-fire" aria-hidden="true"><svg viewBox="0 0 64 72" shapeRendering="crispEdges"><path d="M8 60h48v8H8zM16 52h32v8H16z" fill="#6c4e38"/><path d="M12 44h8V28h8V12h8v12h8v12h8v20H12z" fill="#db703c"/><path d="M24 52V36h8V24h8v20h8v12H24z" fill="#f1b75f"/><path d="M28 52h12v8H28z" fill="#ffe4a0"/></svg></div>
       {Object.values(peers).map(peer => <Sprite key={peer.id} peer={peer} offset={offset} onSelect={() => select(peer.card)} />)}
       {!connected && <div className="guild-offline">{status}</div>}
@@ -175,7 +178,7 @@ export function GuildCampfireScreen() {
   const [error, setError] = useState('')
   const [editing, setEditing] = useState(false)
   const [guild, setGuild] = useState('')
-  const [theme, setTheme] = useState('moonwell')
+  const { theme, preference, choose, style, ready } = useSceneTheme(me?.profile?.race ?? null)
   const [generationBusy, setGenerationBusy] = useState(false)
   const refresh = async () => { try { const data = await api<Me>('me'); setMe(data); setGuild(previous => data.guilds.includes(previous) ? previous : data.guilds[0] || ''); setError('') } catch (e) { setError((e as Error).message) } }
   useEffect(() => { void refresh() }, [])
@@ -184,8 +187,8 @@ export function GuildCampfireScreen() {
     const timer = setInterval(() => { void refresh() }, 4000)
     return () => clearInterval(timer)
   }, [me?.avatar.state])
-  return <main className="guild-app" data-theme={theme}>
-    <header><a href="/">ai-zeroth<span> / guild campfire</span></a><button onClick={() => setTheme(theme === 'moonwell' ? 'tavern' : 'moonwell')}>{theme === 'moonwell' ? 'Tavern' : 'Moonwell'} theme</button></header>
+  return <main className="guild-app" data-theme={theme} style={style}>
+    <header><a href="/">ai-zeroth<span> / guild campfire</span></a><ThemePicker value={preference} onChange={choose} ready={ready} /></header>
     {!me ? <section className="guild-welcome"><h1>Your people, live by the fire.</h1><p role="status">{error || 'Opening the clearing…'}</p>{error && <form onSubmit={async event => {
       event.preventDefault(); const fields = new FormData(event.currentTarget)
       const result = await authClient.signIn.email({ email: String(fields.get('email')), password: String(fields.get('password')) })
@@ -199,7 +202,7 @@ export function GuildCampfireScreen() {
         }}>{me.avatar.state === 'pending' ? `Creating frames ${me.avatar.progress || 0}/${me.avatar.total_steps || 11}…` : 'Create animated sprite'}</button></nav>
         <p className="guild-art-status" role="status">{error || (me.avatar.state === 'ready' ? me.profile.avatarFormat === 'codex-pet-v1' ? 'Saved animated sprite sheet · 9 animation rows' : 'Saved single-frame artwork · generate a new sheet for animation' : me.avatar.state === 'pending' ? 'Building animation rows · existing sprite stays usable' : `${me.profile.avatarUrl ? 'Saved artwork' : 'Hand-drawn fallback sprite'} · ${me.avatar.state === 'failed' ? `Generation stopped: ${generationErrors[me.avatar.error_code || ''] || 'the generated row could not be used'}` : 'AI generation optional'}`)} · {me.avatar.attempts}/2 attempts {me.avatar.previewAvailable && <a href="/api/campfire/generation-preview" target="_blank" rel="noreferrer">· Inspect rejected pose row ↗</a>}</p>
         {me.generationEnabled && me.avatar.state !== 'pending' && me.avatar.attempts < 2 && <p className="guild-generation-note">One sheet uses up to 10 billable image requests and may take several minutes. Existing sprites are kept if generation fails.</p>}
-        {guild && me.profile.published ? <Scene key={guild} guildId={guild} avatarRevision={me.profile.avatarUrl} /> : <section className="guild-welcome"><h2>{!me.profile.published ? 'Publish your character to enter.' : 'Your character is ready.'}</h2><p>{!me.profile.published ? 'Choose Edit character to share your character plan with guild members.' : 'Guild membership has not been linked to your account yet. Your saved character and fallback sprite are ready for the guild onboarding handoff.'}</p></section>}
+        {guild && me.profile.published ? <Scene key={guild} guildId={guild} avatarRevision={me.profile.avatarUrl} theme={theme} /> : <section className="guild-welcome"><h2>{!me.profile.published ? 'Publish your character to enter.' : 'Your character is ready.'}</h2><p>{!me.profile.published ? 'Choose Edit character to share your character plan with guild members.' : 'Guild membership has not been linked to your account yet. Your saved character and fallback sprite are ready for the guild onboarding handoff.'}</p></section>}
       </>}
   </main>
 }
