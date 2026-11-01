@@ -18,6 +18,7 @@ import { Route as GuildsGuildIdRouteImport } from './routes/guilds/$guildId'
 import { Route as GuildsNewRouteImport } from './routes/guilds/new'
 import { Route as ApiAuthSplatRouteImport } from './routes/api/auth/$'
 import { Route as ApiGuildsGuildIdRouteImport } from './routes/api/guilds/$guildId'
+import { Route as GuildsGuildIdManageRouteImport } from './routes/guilds/$guildId_.manage'
 
 const IndexRoute = IndexRouteImport.update({
   id: '/',
@@ -64,6 +65,11 @@ const ApiGuildsGuildIdRoute = ApiGuildsGuildIdRouteImport.update({
   path: '/$guildId',
   getParentRoute: () => ApiGuildsRoute,
 } as any)
+const GuildsGuildIdManageRoute = GuildsGuildIdManageRouteImport.update({
+  id: '/guilds/$guildId_/manage',
+  path: '/guilds/$guildId/manage',
+  getParentRoute: () => rootRouteImport,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
@@ -75,6 +81,7 @@ export interface FileRoutesByFullPath {
   '/guilds/': typeof GuildsIndexRoute
   '/api/auth/$': typeof ApiAuthSplatRoute
   '/api/guilds/$guildId': typeof ApiGuildsGuildIdRoute
+  '/guilds/$guildId/manage': typeof GuildsGuildIdManageRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
@@ -86,6 +93,7 @@ export interface FileRoutesByTo {
   '/guilds': typeof GuildsIndexRoute
   '/api/auth/$': typeof ApiAuthSplatRoute
   '/api/guilds/$guildId': typeof ApiGuildsGuildIdRoute
+  '/guilds/$guildId/manage': typeof GuildsGuildIdManageRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -98,6 +106,7 @@ export interface FileRoutesById {
   '/guilds/': typeof GuildsIndexRoute
   '/api/auth/$': typeof ApiAuthSplatRoute
   '/api/guilds/$guildId': typeof ApiGuildsGuildIdRoute
+  '/guilds/$guildId_/manage': typeof GuildsGuildIdManageRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -111,6 +120,7 @@ export interface FileRouteTypes {
     | '/guilds/'
     | '/api/auth/$'
     | '/api/guilds/$guildId'
+    | '/guilds/$guildId/manage'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
@@ -122,6 +132,7 @@ export interface FileRouteTypes {
     | '/guilds'
     | '/api/auth/$'
     | '/api/guilds/$guildId'
+    | '/guilds/$guildId/manage'
   id:
     | '__root__'
     | '/'
@@ -133,6 +144,7 @@ export interface FileRouteTypes {
     | '/guilds/'
     | '/api/auth/$'
     | '/api/guilds/$guildId'
+    | '/guilds/$guildId_/manage'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -144,6 +156,7 @@ export interface RootRouteChildren {
   GuildsNewRoute: typeof GuildsNewRoute
   GuildsIndexRoute: typeof GuildsIndexRoute
   ApiAuthSplatRoute: typeof ApiAuthSplatRoute
+  GuildsGuildIdManageRoute: typeof GuildsGuildIdManageRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -211,6 +224,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiGuildsGuildIdRouteImport
       parentRoute: typeof ApiGuildsRoute
     }
+    '/guilds/$guildId_/manage': {
+      id: '/guilds/$guildId_/manage'
+      path: '/guilds/$guildId/manage'
+      fullPath: '/guilds/$guildId/manage'
+      preLoaderRoute: typeof GuildsGuildIdManageRouteImport
+      parentRoute: typeof rootRouteImport
+    }
   }
 }
 
@@ -235,6 +255,7 @@ const rootRouteChildren: RootRouteChildren = {
   GuildsNewRoute: GuildsNewRoute,
   GuildsIndexRoute: GuildsIndexRoute,
   ApiAuthSplatRoute: ApiAuthSplatRoute,
+  GuildsGuildIdManageRoute: GuildsGuildIdManageRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
