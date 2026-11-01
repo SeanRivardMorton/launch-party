@@ -7,7 +7,7 @@ import * as schema from './auth-schema'
 
 // Called only in a request: no secret or D1 binding is needed to render the landing page.
 export function getAuth() {
-  if (!env.BETTER_AUTH_SECRET || !env.BETTER_AUTH_URL) return null
+  if (!env.DB || !env.BETTER_AUTH_SECRET || !env.BETTER_AUTH_URL) return null
   return betterAuth({
     appName: 'ai-zeroth',
     baseURL: env.BETTER_AUTH_URL,

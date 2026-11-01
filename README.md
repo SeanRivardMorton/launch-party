@@ -21,7 +21,7 @@ The QR code always points to **https://launchparty.thunkoid.com/signup**, includ
 - New guild publication also issues a private management link at `/guilds/<id>/manage#key=…`. Creators can add, edit or remove recruitment needs later, including clearing the list as gaps are filled. The key is remembered in the creating browser when local storage is available; keep the private link for another device. Only its SHA-256 hash is stored in D1. Public APIs never return keys or management links, and editing requires the key in an Authorization header. Older listings remain readable; management links are issued only with new publication, not by knowing a public guild ID.
 - The directory links to the internal guild page. “Join this guild” opens `/signup?guild=<id>`, retains guild context, uses the guild's faction and records private joining interest after explicit consent. `guild_interest` links the signup and guild, with duplicate joining submissions producing one association. The interest signup and association are saved in one D1 batch. Listings are account-free, self-declared and public; joining interest and contact details are private. Approval inboxes and in-game membership integration remain planned.
 - Existing guild listings also have internal pages. Old external links are no longer used in the public directory or detail API. Invite links use the current origin: localhost during development, the public domain after deployment.
-- Better Auth server endpoints and D1 tables as the authentication foundation. There is deliberately no account-creation UI on the validation page.
+- Separate `/register`, `/login` and protected `/account` screens using the existing Better Auth/D1 foundation. The header follows session state; account holders can update their account name and sign out. Registration does not convert interest submissions, publish player cards or grant guild membership.
 - Player matching, personalised image generation, Battle.net linking and guild administration are **planned**, not implemented.
 
 ### Forever character choices
@@ -52,7 +52,7 @@ Copy `.dev.vars.example` to `.dev.vars`. Replace its placeholder with a fresh se
 openssl rand -hex 32
 ```
 
-Keep `BETTER_AUTH_URL=http://localhost:3000`, then restart the dev server. Better Auth is mounted at `/api/auth/*`; its client helper is `src/lib/auth-client.ts`. Email/password authentication is configured with a 12-character minimum. Email delivery, password recovery, OAuth providers and an account UI are not included in this validation page. Linking Battle.net is a separate future integration.
+Keep `BETTER_AUTH_URL=http://localhost:3000`, then restart the dev server. Better Auth is mounted at `/api/auth/*`; its client helper is `src/lib/auth-client.ts`. Visit `/register` to create an account with a password of at least 12 characters, `/login` to sign in, and `/account` to manage your account name or sign out. Email delivery, password recovery and OAuth providers are not configured. Linking Battle.net is a separate future integration. Missing auth configuration shows a friendly unavailable state while public interest and guild routes remain usable. See [AUTH.md](./AUTH.md) for session boundaries, repeatable local browser checks and the campfire integration handoff.
 
 ## Cloudflare deployment
 
