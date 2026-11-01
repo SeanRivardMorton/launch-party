@@ -77,3 +77,23 @@ The API tests use real local Better Auth and D1. They verify lead ownership, app
 Chromium checks additionally exercised account registration/sign-in/sign-out, actual guild publication, application/approval/decline/reapplication, officer promotion and demotion, initiative creation/editing/deletion, recruitment editing across sessions, member profile updates and removal, using four independent browser contexts. Layouts were checked at 1280×900 and 320×568, including internal scrolling, keyboard focus and error/retry recovery. Hall refresh updates published needs while preserving an unsaved editor draft. Those browser checks were run locally, not against production.
 
 Production migrations and deployment belong to the existing GitHub Actions pipeline after PR review/merge. No production migration or direct deployment is part of local verification.
+
+## BattleTags
+
+Approved members can save an optional, self-provided BattleTag in the guild hall.
+One tag is stored per account and shared with approved members of its guilds.
+It can be edited or removed by its owner; a blank value removes it everywhere.
+This is manual contact sharing, not Battle.net OAuth or a verified identity.
+
+The private roster and campfire character cards offer **Copy BattleTag**, with
+manual copying supported if clipboard access is unavailable. The campfire fetches
+the tag only when opening a card, using a private, non-cacheable endpoint that
+checks both users' current approved membership in the requested guild. Tags are
+not added to WebSocket snapshots, public profiles, guild listings or applications.
+Outsiders, pending/declined applicants and removed members cannot read them.
+Previously viewed information cannot be retracted from another person's memory
+or clipboard; edits/removal apply to subsequent server reads.
+
+Migration `0007_member_battletags.sql` stores tags separately from public character
+data. `pnpm test:guilds` includes privacy, validation, ownership, removal and
+cross-guild authorization checks using local Better Auth sessions and D1.

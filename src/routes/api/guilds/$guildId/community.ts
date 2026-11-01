@@ -10,7 +10,7 @@ const fail = (error: string, status: number) => Response.json({ error }, { statu
 const success = () => Response.json({ success: true }, { headers: { 'Cache-Control': 'no-store' } })
 const managerExists = "EXISTS (SELECT 1 FROM guild_memberships manager WHERE manager.guild_id = ? AND manager.user_id = ? AND manager.role IN ('leader', 'officer'))"
 type GuildAccess = { faction: Faction; owner: string | null }
-type MemberRow = { userId: string; role: GuildRole; profile: string; joinedAt: string }
+type MemberRow = { userId: string; role: GuildRole; profile: string; joinedAt: string; battleTag: string }
 type ApplicationRow = { userId: string; profile: string; introduction: string; status: ApplicationStatus; createdAt: string }
 
 export const Route = createFileRoute('/api/guilds/$guildId/community')({
@@ -35,7 +35,9 @@ export const Route = createFileRoute('/api/guilds/$guildId/community')({
           canClaim: guild.owner === null, campfireAvailable: false,
         }
         if (!role) return Response.json(community, { headers: { 'Cache-Control': 'no-store' } })
-        const { results: members } = await env.DB.prepare('SELECT user_id AS userId, role, profile, joined_at AS joinedAt FROM guild_memberships WHERE guild_id = ? ORDER BY joined_at, user_id LIMIT 21 OFFSET ?').bind(guildId, membersPage * 20).all<MemberRow>()
+        const ownTag = await env.DB.prepare('SELECT battletag FROM member_battletags WHERE user_id = ?').bind(userId).first<{ battletag: string }>()
+        community.viewer.battleTag = ownTag?.battletag || ''
+        const { results: members } = await env.DB.prepare("SELECT member.user_id AS userId, member.role, member.profile, member.joined_at AS joinedAt, COALESCE(tag.battletag, '') AS battleTag FROM guild_memberships member LEFT JOIN member_battletags tag ON tag.user_id = member.user_id WHERE member.guild_id = ? AND EXISTS (SELECT 1 FROM guild_memberships viewer WHERE viewer.guild_id = member.guild_id AND viewer.user_id = ?) ORDER BY member.joined_at, member.user_id LIMIT 21 OFFSET ?").bind(guildId, userId, membersPage * 20).all<MemberRow>()
         community.members = members.slice(0, 20).map(({ profile, ...member }): GuildMember => ({ ...member, ...guildCharacterSchema.parse(JSON.parse(profile)) }))
         community.membersHasMore = members.length > 20
         const { results: initiatives } = await env.DB.prepare('SELECT id, title, description, status, created_at AS createdAt, updated_at AS updatedAt FROM guild_initiatives WHERE guild_id = ? ORDER BY created_at, id LIMIT 50').bind(guildId).all<GuildInitiative>()
@@ -66,6 +68,12 @@ export const Route = createFileRoute('/api/guilds/$guildId/community')({
         const guild = await env.DB.prepare('SELECT faction, owner_user_id AS owner FROM guilds WHERE id = ?').bind(guildId).first<GuildAccess>()
         if (!guild) return fail('This guild could not be found.', 404)
         const role = await guildRole(env.DB, guildId, user.id)
+        if (action.action === 'update-battletag') {
+          if (!role) return fail('Only approved members can share a BattleTag.', 403)
+          const result = await env.DB.prepare('INSERT INTO member_battletags (user_id, battletag) SELECT ?, ? WHERE EXISTS (SELECT 1 FROM guild_memberships WHERE guild_id = ? AND user_id = ?) ON CONFLICT(user_id) DO UPDATE SET battletag = excluded.battletag')
+            .bind(user.id, action.battleTag, guildId, user.id).run()
+          return result.meta.changes ? success() : fail('Your membership is no longer active.', 403)
+        }
         if (action.action === 'claim') {
           if (guild.owner && guild.owner !== user.id) return fail('This guild already has a lead.', 403)
           const hash = await hashManagementKey(action.managementKey)
