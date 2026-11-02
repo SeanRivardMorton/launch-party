@@ -11,9 +11,14 @@
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as AccountRouteImport } from './routes/account'
+import { Route as CalendarRouteImport } from './routes/calendar'
 import { Route as CampfireRouteImport } from './routes/campfire'
+import { Route as CharactersRouteImport } from './routes/characters'
+import { Route as ForgotPasswordRouteImport } from './routes/forgot-password'
+import { Route as GuildRouteImport } from './routes/guild'
 import { Route as LoginRouteImport } from './routes/login'
 import { Route as RegisterRouteImport } from './routes/register'
+import { Route as ResetPasswordRouteImport } from './routes/reset-password'
 import { Route as SignupRouteImport } from './routes/signup'
 import { Route as ApiGuildsRouteImport } from './routes/api/guilds'
 import { Route as ApiInterestRouteImport } from './routes/api/interest'
@@ -37,9 +42,29 @@ const AccountRoute = AccountRouteImport.update({
   path: '/account',
   getParentRoute: () => rootRouteImport,
 } as any)
+const CalendarRoute = CalendarRouteImport.update({
+  id: '/calendar',
+  path: '/calendar',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const CampfireRoute = CampfireRouteImport.update({
   id: '/campfire',
   path: '/campfire',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const CharactersRoute = CharactersRouteImport.update({
+  id: '/characters',
+  path: '/characters',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ForgotPasswordRoute = ForgotPasswordRouteImport.update({
+  id: '/forgot-password',
+  path: '/forgot-password',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const GuildRoute = GuildRouteImport.update({
+  id: '/guild',
+  path: '/guild',
   getParentRoute: () => rootRouteImport,
 } as any)
 const LoginRoute = LoginRouteImport.update({
@@ -50,6 +75,11 @@ const LoginRoute = LoginRouteImport.update({
 const RegisterRoute = RegisterRouteImport.update({
   id: '/register',
   path: '/register',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ResetPasswordRoute = ResetPasswordRouteImport.update({
+  id: '/reset-password',
+  path: '/reset-password',
   getParentRoute: () => rootRouteImport,
 } as any)
 const SignupRoute = SignupRouteImport.update({
@@ -117,9 +147,14 @@ const ApiGuildsGuildIdCommunityRoute =
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/account': typeof AccountRoute
+  '/calendar': typeof CalendarRoute
   '/campfire': typeof CampfireRoute
+  '/characters': typeof CharactersRoute
+  '/forgot-password': typeof ForgotPasswordRoute
+  '/guild': typeof GuildRoute
   '/login': typeof LoginRoute
   '/register': typeof RegisterRoute
+  '/reset-password': typeof ResetPasswordRoute
   '/signup': typeof SignupRoute
   '/api/guilds': typeof ApiGuildsRouteWithChildren
   '/api/interest': typeof ApiInterestRoute
@@ -136,9 +171,14 @@ export interface FileRoutesByFullPath {
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/account': typeof AccountRoute
+  '/calendar': typeof CalendarRoute
   '/campfire': typeof CampfireRoute
+  '/characters': typeof CharactersRoute
+  '/forgot-password': typeof ForgotPasswordRoute
+  '/guild': typeof GuildRoute
   '/login': typeof LoginRoute
   '/register': typeof RegisterRoute
+  '/reset-password': typeof ResetPasswordRoute
   '/signup': typeof SignupRoute
   '/api/guilds': typeof ApiGuildsRouteWithChildren
   '/api/interest': typeof ApiInterestRoute
@@ -156,9 +196,14 @@ export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
   '/account': typeof AccountRoute
+  '/calendar': typeof CalendarRoute
   '/campfire': typeof CampfireRoute
+  '/characters': typeof CharactersRoute
+  '/forgot-password': typeof ForgotPasswordRoute
+  '/guild': typeof GuildRoute
   '/login': typeof LoginRoute
   '/register': typeof RegisterRoute
+  '/reset-password': typeof ResetPasswordRoute
   '/signup': typeof SignupRoute
   '/api/guilds': typeof ApiGuildsRouteWithChildren
   '/api/interest': typeof ApiInterestRoute
@@ -177,9 +222,14 @@ export interface FileRouteTypes {
   fullPaths:
     | '/'
     | '/account'
+    | '/calendar'
     | '/campfire'
+    | '/characters'
+    | '/forgot-password'
+    | '/guild'
     | '/login'
     | '/register'
+    | '/reset-password'
     | '/signup'
     | '/api/guilds'
     | '/api/interest'
@@ -196,9 +246,14 @@ export interface FileRouteTypes {
   to:
     | '/'
     | '/account'
+    | '/calendar'
     | '/campfire'
+    | '/characters'
+    | '/forgot-password'
+    | '/guild'
     | '/login'
     | '/register'
+    | '/reset-password'
     | '/signup'
     | '/api/guilds'
     | '/api/interest'
@@ -215,9 +270,14 @@ export interface FileRouteTypes {
     | '__root__'
     | '/'
     | '/account'
+    | '/calendar'
     | '/campfire'
+    | '/characters'
+    | '/forgot-password'
+    | '/guild'
     | '/login'
     | '/register'
+    | '/reset-password'
     | '/signup'
     | '/api/guilds'
     | '/api/interest'
@@ -235,9 +295,14 @@ export interface FileRouteTypes {
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   AccountRoute: typeof AccountRoute
+  CalendarRoute: typeof CalendarRoute
   CampfireRoute: typeof CampfireRoute
+  CharactersRoute: typeof CharactersRoute
+  ForgotPasswordRoute: typeof ForgotPasswordRoute
+  GuildRoute: typeof GuildRoute
   LoginRoute: typeof LoginRoute
   RegisterRoute: typeof RegisterRoute
+  ResetPasswordRoute: typeof ResetPasswordRoute
   SignupRoute: typeof SignupRoute
   ApiGuildsRoute: typeof ApiGuildsRouteWithChildren
   ApiInterestRoute: typeof ApiInterestRoute
@@ -266,11 +331,39 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AccountRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/calendar': {
+      id: '/calendar'
+      path: '/calendar'
+      fullPath: '/calendar'
+      preLoaderRoute: typeof CalendarRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/campfire': {
       id: '/campfire'
       path: '/campfire'
       fullPath: '/campfire'
       preLoaderRoute: typeof CampfireRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/characters': {
+      id: '/characters'
+      path: '/characters'
+      fullPath: '/characters'
+      preLoaderRoute: typeof CharactersRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/forgot-password': {
+      id: '/forgot-password'
+      path: '/forgot-password'
+      fullPath: '/forgot-password'
+      preLoaderRoute: typeof ForgotPasswordRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/guild': {
+      id: '/guild'
+      path: '/guild'
+      fullPath: '/guild'
+      preLoaderRoute: typeof GuildRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/login': {
@@ -285,6 +378,13 @@ declare module '@tanstack/react-router' {
       path: '/register'
       fullPath: '/register'
       preLoaderRoute: typeof RegisterRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/reset-password': {
+      id: '/reset-password'
+      path: '/reset-password'
+      fullPath: '/reset-password'
+      preLoaderRoute: typeof ResetPasswordRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/signup': {
@@ -400,9 +500,14 @@ const ApiGuildsRouteWithChildren = ApiGuildsRoute._addFileChildren(
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   AccountRoute: AccountRoute,
+  CalendarRoute: CalendarRoute,
   CampfireRoute: CampfireRoute,
+  CharactersRoute: CharactersRoute,
+  ForgotPasswordRoute: ForgotPasswordRoute,
+  GuildRoute: GuildRoute,
   LoginRoute: LoginRoute,
   RegisterRoute: RegisterRoute,
+  ResetPasswordRoute: ResetPasswordRoute,
   SignupRoute: SignupRoute,
   ApiGuildsRoute: ApiGuildsRouteWithChildren,
   ApiInterestRoute: ApiInterestRoute,

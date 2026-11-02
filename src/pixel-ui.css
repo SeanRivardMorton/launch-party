@@ -186,8 +186,7 @@
 }
 .site .character-speech::after { bottom: -6px; width: 8px; height: 8px; border: 0; transform: none; background: var(--panel); box-shadow: 2px 2px 0 var(--frame-light); }
 .signup-dialog::backdrop { background: #041218cc; backdrop-filter: none; }
-.site .status-dot, .site .signup-qr { border-radius: 0; }
-.site .signup-qr { box-shadow: 0 0 0 2px var(--border), 6px 6px 0 #0006; }
+.site .status-dot { border-radius: 0; }
 
 @media (max-width: 520px) {
   .signup-card { padding: 24px 20px; }

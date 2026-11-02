@@ -1,19 +1,19 @@
 import { test, expect } from '@playwright/test'
 import { execFileSync } from 'node:child_process'
 import { sceneThemes } from '../../src/lib/scene-themes'
-import { decode } from 'fast-png'
 
 const origin = process.env.THEME_TEST_ORIGIN || 'http://localhost:3127'
 const viewports = [{ width: 1440, height: 900 }, { width: 320, height: 568 }, { width: 390, height: 844 }, { width: 844, height: 390 }]
 
-test('every landscape: desktop, narrow mobile, portrait and landscape; keyboard, QR, motion and persistence', async ({ page }) => {
+test('every landscape: desktop, narrow mobile, portrait and landscape; keyboard, home panel, motion and persistence', async ({ page }) => {
   const errors: string[] = []
   page.on('pageerror', error => errors.push(error.message))
   await page.goto('/')
   const picker = page.getByRole('combobox', { name: 'Background scenery' })
   await expect(picker).toHaveValue('automatic')
   await expect(picker).toBeEnabled()
-  for (let i = 0; i < 4; i++) await page.keyboard.press('Tab')
+  await page.getByRole('link', { name: 'ai-zeroth home' }).focus()
+  await page.keyboard.press('Tab')
   await expect(picker).toBeFocused()
   // Native select type-ahead is keyboard-operable on macOS/headless Chromium;
   // arrow popup navigation belongs to the OS and is not exposed to Playwright.
@@ -29,17 +29,11 @@ test('every landscape: desktop, narrow mobile, portrait and landscape; keyboard,
       await page.setViewportSize(viewport)
       await page.evaluate(() => new Promise<void>(resolve => requestAnimationFrame(() => requestAnimationFrame(() => resolve()))))
       await expect(picker).toBeInViewport({ ratio: 1 })
-      await expect(page.locator('.signup-qr')).toBeInViewport({ ratio: 1 })
-      await expect(page.getByRole('button', { name: 'Meet Thrag, Tank, Leatherworker' })).toBeInViewport()
+      await expect(page.getByRole('heading', { name: 'Welcome back.' })).toBeVisible()
+      await page.getByRole('button', { name: 'Sign in', exact: true }).scrollIntoViewIfNeeded()
+      await expect(page.getByRole('button', { name: 'Sign in', exact: true })).toBeInViewport()
       expect(await page.evaluate(() => document.documentElement.scrollHeight <= innerHeight && document.documentElement.scrollWidth <= innerWidth)).toBe(true)
-      const image = decode(await page.screenshot({ path: `test-results/themes/${theme}-${viewport.width}.png` }))
-      const qr = (await page.locator('.signup-qr').boundingBox())!
-      let black = 0
-      for (let y = Math.ceil(qr.y); y < Math.floor(qr.y + qr.height); y++) for (let x = Math.ceil(qr.x); x < Math.floor(qr.x + qr.width); x++) {
-        const offset = (y * image.width + x) * image.channels
-        if (image.data[offset] < 30 && image.data[offset + 1] < 30 && image.data[offset + 2] < 30) black++
-      }
-      expect(black / (qr.width * qr.height), 'QR modules are painted, not just an empty white container').toBeGreaterThan(.1)
+      await page.screenshot({ path: `test-results/themes/${theme}-${viewport.width}.png` })
     }
   }
   await page.emulateMedia({ reducedMotion: 'reduce' })
@@ -91,7 +85,8 @@ test('authorized profile mapping, live race changes, manual precedence, campfire
     for (const viewport of viewports) {
       await page.setViewportSize(viewport)
       await expect(picker).toBeInViewport({ ratio: 1 })
-      await expect(page.locator('.signup-qr')).toBeInViewport({ ratio: 1 })
+      await page.getByRole('navigation', { name: 'Adventures' }).getByRole('link', { name: /Characters/ }).scrollIntoViewIfNeeded()
+      await expect(page.getByRole('navigation', { name: 'Adventures' })).toBeVisible()
       expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true)
     }
     await page.setViewportSize(viewports[0])
@@ -205,7 +200,9 @@ test('manual themes persist through app routes, links, reload and browser histor
     await expect(page.locator('.app-theme')).toHaveAttribute('data-theme', theme)
   }
   await page.goto('/')
-  await page.getByRole('link', { name: 'Sign in', exact: true }).click()
+  await page.getByRole('link', { name: 'Create an account', exact: true }).click()
+  await expect(page).toHaveURL(/\/register/)
+  await page.locator('.account-switch').getByRole('link', { name: 'Sign in', exact: true }).click()
   await expect(page).toHaveURL(/\/login/)
   await expect(page.locator('.app-theme')).toHaveAttribute('data-theme', 'dunmorogh')
   await page.locator('.app-theme').evaluate(el => el.setAttribute('data-navigation-test', 'retained'))
