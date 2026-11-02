@@ -3,7 +3,7 @@ import { execFileSync } from 'node:child_process'
 import { sceneThemes } from '../../src/lib/scene-themes'
 import { decode } from 'fast-png'
 
-const origin = 'http://localhost:3127'
+const origin = process.env.THEME_TEST_ORIGIN || 'http://localhost:3127'
 const viewports = [{ width: 1440, height: 900 }, { width: 320, height: 568 }, { width: 390, height: 844 }, { width: 844, height: 390 }]
 
 test('every landscape: desktop, narrow mobile, portrait and landscape; keyboard, QR, motion and persistence', async ({ page }) => {
@@ -67,6 +67,10 @@ test('authorized profile mapping, live race changes, manual precedence, campfire
     await empty.goto('/')
     await expect(empty.getByRole('button', { name: 'My account' })).toBeVisible()
     await expect(empty.locator('.site')).toHaveAttribute('data-theme', 'moonwell')
+    await empty.goto('/campfire')
+    await expect(empty.locator('.guild-editor')).toBeVisible()
+    expect(await empty.getByRole('textbox', { name: 'Public nickname' }).evaluate(el => getComputedStyle(el).fontFamily)).toContain('Space Grotesk')
+    await empty.screenshot({ path: 'test-results/themes/campfire-setup.png' })
     await empty.close()
     await save('Night Elf')
     const page = await context.newPage()
@@ -74,6 +78,11 @@ test('authorized profile mapping, live race changes, manual precedence, campfire
     const picker = page.getByRole('combobox', { name: 'Background scenery' })
     const site = page.locator('.site')
     await expect(site).toHaveAttribute('data-theme', 'darnassus')
+    await page.goto('/campfire')
+    await expect(page.getByRole('heading', { name: 'Your character is ready.' })).toBeVisible()
+    await expect(page.locator('.guild-app > .world-scene [data-landscape]')).toHaveAttribute('data-landscape', 'darnassus')
+    expect(await page.locator('.guild-welcome h2').evaluate(el => getComputedStyle(el).fontFamily)).toContain('Space Grotesk')
+    await page.screenshot({ path: 'test-results/themes/campfire-no-guild.png' })
     for (const route of ['/account', '/guilds', '/guilds/new', '/signup', '/']) {
       await page.goto(route)
       await expect(page.locator('.app-theme')).toHaveAttribute('data-theme', 'darnassus')
@@ -103,9 +112,20 @@ test('authorized profile mapping, live race changes, manual precedence, campfire
     await expect(page.locator('.guild-app')).toHaveAttribute('data-theme', 'durotar')
     await expect(page.locator('.guild-scene [data-landscape]')).toHaveAttribute('data-landscape', 'durotar')
     await expect(page.getByText('1 by the fire')).toBeVisible()
+    for (const selector of ['.guild-app', '.guild-app header > a', '.guild-livebar', '.guild-toolbar button', '.guild-controls button', '.theme-picker select']) {
+      expect(await page.locator(selector).first().evaluate(el => getComputedStyle(el).fontFamily)).toContain('Space Grotesk')
+    }
+    await page.locator('.guild-sprite').click()
+    await expect(page.getByRole('dialog')).toBeVisible()
+    expect(await page.getByRole('dialog').locator('h2').evaluate(el => getComputedStyle(el).fontFamily)).toContain('Space Grotesk')
+    await page.screenshot({ path: 'test-results/themes/campfire-character-card.png' })
+    await page.keyboard.press('Escape')
+    await expect(page.getByRole('dialog')).not.toBeVisible()
+    const position = await page.locator('.guild-sprite').evaluate(el => ({ left: (el as HTMLElement).style.left, top: (el as HTMLElement).style.top }))
     for (const theme of Object.keys(sceneThemes)) {
       await picker.selectOption(theme)
       await expect(page.locator('.guild-app')).toHaveAttribute('data-theme', theme)
+      expect(await page.locator('.guild-sprite').evaluate(el => ({ left: (el as HTMLElement).style.left, top: (el as HTMLElement).style.top }))).toEqual(position)
       for (const viewport of viewports) {
         await page.setViewportSize(viewport)
         await expect(picker).toBeInViewport({ ratio: 1 })
@@ -130,6 +150,40 @@ test('authorized profile mapping, live race changes, manual precedence, campfire
   } finally {
     await context.close()
     if (id) execFileSync('pnpm', ['exec', 'wrangler', 'd1', 'execute', 'DB', '--local', '--command', `DELETE FROM user WHERE id='${id}'`], { stdio: 'pipe' })
+  }
+})
+
+test('campfire sign-in shares app font, pixel surfaces and scenery before a live room exists', async ({ page }) => {
+  await page.goto('/login')
+  await page.evaluate(() => document.fonts.ready)
+  const expectedFont = await page.locator('.site').evaluate(el => getComputedStyle(el).fontFamily)
+  const panel = await page.locator('.signup-card').evaluate(el => ({ background: getComputedStyle(el).backgroundColor, border: getComputedStyle(el).borderTopWidth, radius: getComputedStyle(el).borderRadius }))
+  await page.goto('/')
+  await page.getByRole('combobox', { name: 'Background scenery' }).selectOption('darnassus')
+  await page.goto('/campfire')
+  await expect(page.getByRole('button', { name: 'Sign in', exact: true })).toBeVisible()
+  for (const theme of Object.keys(sceneThemes)) {
+    await page.getByRole('combobox', { name: 'Background scenery' }).selectOption(theme)
+    await expect(page.locator('.guild-app')).toHaveAttribute('data-theme', theme)
+    await expect(page.locator('.guild-app > .world-scene')).toBeVisible()
+    if (theme !== 'moonwell' && theme !== 'tavern') await expect(page.locator('[data-landscape]')).toHaveAttribute('data-landscape', theme)
+  }
+  await page.getByRole('combobox', { name: 'Background scenery' }).selectOption('moonwell')
+  expect(await page.locator('.guild-welcome').evaluate(el => ({ background: getComputedStyle(el).backgroundColor, border: getComputedStyle(el).borderTopWidth, radius: getComputedStyle(el).borderRadius }))).toEqual(panel)
+  for (const selector of ['.guild-app', '.guild-welcome h1', '.guild-app header > a', '.guild-welcome input', '.guild-welcome button', '.theme-picker select']) {
+    expect(await page.locator(selector).first().evaluate(el => getComputedStyle(el).fontFamily)).toBe(expectedFont)
+  }
+  await page.getByRole('combobox', { name: 'Background scenery' }).selectOption('darnassus')
+  for (const viewport of viewports) {
+    await page.setViewportSize(viewport)
+    await expect(page.getByRole('combobox', { name: 'Background scenery' })).toBeInViewport({ ratio: 1 })
+    const submit = page.getByRole('button', { name: 'Sign in', exact: true })
+    await submit.scrollIntoViewIfNeeded()
+    await expect(submit).toBeInViewport({ ratio: 1 })
+    await submit.focus()
+    await expect(submit).toBeFocused()
+    expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth && document.documentElement.scrollHeight <= innerHeight)).toBe(true)
+    await page.screenshot({ path: `test-results/themes/campfire-sign-in-${viewport.width}.png` })
   }
 })
 

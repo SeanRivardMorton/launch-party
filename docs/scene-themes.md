@@ -6,6 +6,10 @@ The room's positions, movement bounds, sprites and fire remain unchanged. A quie
 ground overlay in the live room keeps character names and bodies legible.
 Portrait-only edge landmarks keep forests and mesas recognizable when the wide
 scene is cropped. Short landscape rooms keep the picker visible in their header.
+The campfire uses the same `.site`, pixel card/input/button styles and Space
+Grotesk font as other routes. Its selected landscape is also visible during
+sign-in/loading, character setup/editing and no-guild/unpublished states, not
+only inside a live room. Only one scenery SVG is rendered in each state.
 
 | Race | Automatic scenery | Visual landmarks |
 | --- | --- | --- |
@@ -52,6 +56,11 @@ and `pnpm build`. For the isolated browser suite use an ignored `.dev.vars` with
 pnpm db:local
 pnpm exec playwright test --config playwright.themes.config.ts
 ```
+
+For a separate worktree, set `THEME_TEST_ORIGIN=http://localhost:34791` when
+running Playwright and use the same URL for that worktree's `BETTER_AUTH_URL`.
+The suite refuses to reuse an existing server so it cannot silently test another
+worktree's code or local database.
 
 The suite runs on port 3127, creates/deletes synthetic local users, and adds a
 local-only room membership. It never calls generation or production services.
