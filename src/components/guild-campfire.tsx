@@ -146,9 +146,9 @@ function Scene({ guildId, avatarRevision, theme }: { guildId: string; avatarRevi
       {Object.values(peers).map(peer => <Sprite key={peer.id} peer={peer} offset={offset} onSelect={() => select(peer.card)} />)}
       {!connected && <div className="guild-offline">{status}</div>}
     </div>
-    <div className="guild-controls"><span>Tap the clearing to move · arrows work too</span><div>{emotes.map(emote => <button key={emote} disabled={!connected} onClick={() => send({ type: 'emote', emote })}>{symbols[emote]} {emote}</button>)}</div></div>
-    <dialog ref={dialog} className="guild-card" onClick={event => { if (event.target === event.currentTarget) dialog.current?.close() }}>
-      {selected && <article><h2>{selected.nickname}</h2><p>{selected.faction} · {selected.race} {selected.characterClass}</p><p>{selected.professions.join(' · ') || 'Professions undecided'}</p><p>{selected.bio}</p><small>Published character plan · self-declared</small><button autoFocus onClick={() => dialog.current?.close()}>Close card</button></article>}
+    <div className="guild-controls"><span>Tap the clearing to move · arrows work too</span><div>{emotes.map(emote => <button className="button button-outline" key={emote} disabled={!connected} onClick={() => send({ type: 'emote', emote })}>{symbols[emote]} {emote}</button>)}</div></div>
+    <dialog ref={dialog} className="guild-card signup-card" onClick={event => { if (event.target === event.currentTarget) dialog.current?.close() }}>
+      {selected && <article><h2>{selected.nickname}</h2><p>{selected.faction} · {selected.race} {selected.characterClass}</p><p>{selected.professions.join(' · ') || 'Professions undecided'}</p><p>{selected.bio}</p><small>Published character plan · self-declared</small><button className="button button-outline" autoFocus onClick={() => dialog.current?.close()}>Close card</button></article>}
     </dialog>
   </>
 }
@@ -158,18 +158,18 @@ function ProfileEditor({ initial, onSave }: { initial: Me['profile']; onSave: ()
   const [error, setError] = useState('')
   const [busy, setBusy] = useState(false)
   const [draft, setDraft] = useState({ nickname: initial?.nickname || '', faction: initial?.faction || 'Alliance', race: initial?.race || '', characterClass: initial?.characterClass || '', professions: initial?.professions.join(', ') || '', bio: initial?.bio || '', published: initial?.published || false })
-  return <form className="guild-editor" onSubmit={async event => {
+  return <form className="guild-editor signup-card" onSubmit={async event => {
     event.preventDefault()
     if (step < 2) { setStep(step + 1); return }
     setBusy(true); setError('')
     try { await api('profile', 'PUT', { ...draft, professions: draft.professions.split(',').map(p => p.trim()).filter(Boolean) }); onSave() } catch (e) { setError((e as Error).message) } finally { setBusy(false) }
   }}>
     <h2>Your campfire character · {step + 1}/3</h2>
-    {step === 0 && <><label>Public nickname<input required minLength={2} maxLength={32} value={draft.nickname} onChange={e => setDraft({ ...draft, nickname: e.target.value })} /></label><label>Faction<select value={draft.faction} onChange={e => setDraft({ ...draft, faction: e.target.value })}><option>Alliance</option><option>Horde</option></select></label></>}
-    {step === 1 && <><label>Planned race<input required maxLength={40} placeholder="e.g. Dwarf or Undecided" value={draft.race} onChange={e => setDraft({ ...draft, race: e.target.value })} /></label><label>Planned class<input required maxLength={40} placeholder="e.g. Priest or Undecided" value={draft.characterClass} onChange={e => setDraft({ ...draft, characterClass: e.target.value })} /></label></>}
-    {step === 2 && <><label>Up to two professions, comma separated<input maxLength={82} value={draft.professions} onChange={e => setDraft({ ...draft, professions: e.target.value })} /></label><label>Short public bio<input maxLength={280} value={draft.bio} onChange={e => setDraft({ ...draft, bio: e.target.value })} /></label><label className="guild-checkbox"><input type="checkbox" checked={draft.published} onChange={e => setDraft({ ...draft, published: e.target.checked })} /> Publish this character to guild members. Email and contact details are never shared.</label></>}
+    {step === 0 && <><label>Public nickname<input className="input" required minLength={2} maxLength={32} value={draft.nickname} onChange={e => setDraft({ ...draft, nickname: e.target.value })} /></label><label>Faction<select value={draft.faction} onChange={e => setDraft({ ...draft, faction: e.target.value })}><option>Alliance</option><option>Horde</option></select></label></>}
+    {step === 1 && <><label>Planned race<input className="input" required maxLength={40} placeholder="e.g. Dwarf or Undecided" value={draft.race} onChange={e => setDraft({ ...draft, race: e.target.value })} /></label><label>Planned class<input className="input" required maxLength={40} placeholder="e.g. Priest or Undecided" value={draft.characterClass} onChange={e => setDraft({ ...draft, characterClass: e.target.value })} /></label></>}
+    {step === 2 && <><label>Up to two professions, comma separated<input className="input" maxLength={82} value={draft.professions} onChange={e => setDraft({ ...draft, professions: e.target.value })} /></label><label>Short public bio<input className="input" maxLength={280} value={draft.bio} onChange={e => setDraft({ ...draft, bio: e.target.value })} /></label><label className="guild-checkbox"><input type="checkbox" checked={draft.published} onChange={e => setDraft({ ...draft, published: e.target.checked })} /> Publish this character to guild members. Email and contact details are never shared.</label></>}
     {error && <p role="alert">{error}</p>}
-    <div>{step > 0 && <button type="button" onClick={() => setStep(step - 1)}>Back</button>}<button disabled={busy}>{step === 2 ? 'Save character' : 'Next'}</button></div>
+    <div>{step > 0 && <button className="button button-outline" type="button" onClick={() => setStep(step - 1)}>Back</button>}<button className="button button-primary" disabled={busy}>{step === 2 ? 'Save character' : 'Next'}</button></div>
   </form>
 }
 
@@ -190,22 +190,24 @@ export function GuildCampfireScreen() {
     const timer = setInterval(() => { void refresh() }, 4000)
     return () => clearInterval(timer)
   }, [me?.avatar.state])
-  return <main className="guild-app" data-theme={theme} style={style}>
-    <header><a href="/">ai-zeroth<span> / guild campfire</span></a><ThemePicker value={preference} onChange={choose} ready={ready} /></header>
-    {!me ? <section className="guild-welcome"><h1>Your people, live by the fire.</h1><p role="status">{error || 'Opening the clearing…'}</p>{error && <form onSubmit={async event => {
+  const showRoom = Boolean(me?.profile?.published && guild && !editing)
+  return <main className="site guild-app" data-theme={theme} style={style}>
+    {!showRoom && <WorldScene theme={theme} />}
+    <header><a className="brand" href="/">ai-zeroth<span> / guild campfire</span></a><ThemePicker value={preference} onChange={choose} ready={ready} /></header>
+    {!me ? <section className="guild-welcome signup-card"><h1>Your people, live by the fire.</h1><p role="status">{error || 'Opening the clearing…'}</p>{error && <form onSubmit={async event => {
       event.preventDefault(); const fields = new FormData(event.currentTarget)
       const result = await authClient.signIn.email({ email: String(fields.get('email')), password: String(fields.get('password')) })
       if (result.error) setError(result.error.message || 'Unable to sign in'); else await refresh()
-    }}><label>Email<input name="email" type="email" autoComplete="email" required /></label><label>Password<input name="password" type="password" autoComplete="current-password" required /></label><button>Sign in</button></form>}</section>
+    }}><label>Email<input className="input" name="email" type="email" autoComplete="email" required /></label><label>Password<input className="input" name="password" type="password" autoComplete="current-password" required /></label><button className="button button-primary">Sign in</button></form>}</section>
       : editing || !me.profile ? <ProfileEditor initial={me.profile} onSave={() => { setEditing(false); void refresh() }} />
       : <>
-        <nav className="guild-toolbar"><button onClick={() => setEditing(true)}>Edit character</button><label>Guild<select aria-label="Guild campfire" value={guild} onChange={e => setGuild(e.target.value)}>{me.guilds.map(id => <option key={id}>{id}</option>)}</select></label><button disabled={!me.generationEnabled || generationBusy || me.avatar.state === 'pending' || me.avatar.attempts >= 2} onClick={async () => {
+        <nav className="guild-toolbar"><button className="button button-outline" onClick={() => setEditing(true)}>Edit character</button><label>Guild<select aria-label="Guild campfire" value={guild} onChange={e => setGuild(e.target.value)}>{me.guilds.map(id => <option key={id}>{id}</option>)}</select></label><button className="button button-outline" disabled={!me.generationEnabled || generationBusy || me.avatar.state === 'pending' || me.avatar.attempts >= 2} onClick={async () => {
           setGenerationBusy(true)
           try { await api('generate', 'POST'); await refresh() } catch (e) { setError((e as Error).message) } finally { setGenerationBusy(false) }
         }}>{me.avatar.state === 'pending' ? `Creating frames ${me.avatar.progress || 0}/${me.avatar.total_steps || 11}…` : 'Create animated sprite'}</button></nav>
         <p className="guild-art-status" role="status">{error || (me.avatar.state === 'ready' ? me.profile.avatarFormat === 'codex-pet-v1' ? 'Saved animated sprite sheet · 9 animation rows' : 'Saved single-frame artwork · generate a new sheet for animation' : me.avatar.state === 'pending' ? 'Building animation rows · existing sprite stays usable' : `${me.profile.avatarUrl ? 'Saved artwork' : 'Hand-drawn fallback sprite'} · ${me.avatar.state === 'failed' ? `Generation stopped: ${generationErrors[me.avatar.error_code || ''] || 'the generated row could not be used'}` : 'AI generation optional'}`)} · {me.avatar.attempts}/2 attempts {me.avatar.previewAvailable && <a href="/api/campfire/generation-preview" target="_blank" rel="noreferrer">· Inspect rejected pose row ↗</a>}</p>
         {me.generationEnabled && me.avatar.state !== 'pending' && me.avatar.attempts < 2 && <p className="guild-generation-note">One sheet uses up to 10 billable image requests and may take several minutes. Existing sprites are kept if generation fails.</p>}
-        {guild && me.profile.published ? <Scene key={guild} guildId={guild} avatarRevision={me.profile.avatarUrl} theme={theme} /> : <section className="guild-welcome"><h2>{!me.profile.published ? 'Publish your character to enter.' : 'Your character is ready.'}</h2><p>{!me.profile.published ? 'Choose Edit character to share your character plan with guild members.' : 'Guild membership has not been linked to your account yet. Your saved character and fallback sprite are ready for the guild onboarding handoff.'}</p></section>}
+        {guild && me.profile.published ? <Scene key={guild} guildId={guild} avatarRevision={me.profile.avatarUrl} theme={theme} /> : <section className="guild-welcome signup-card"><h2>{!me.profile.published ? 'Publish your character to enter.' : 'Your character is ready.'}</h2><p>{!me.profile.published ? 'Choose Edit character to share your character plan with guild members.' : 'Guild membership has not been linked to your account yet. Your saved character and fallback sprite are ready for the guild onboarding handoff.'}</p></section>}
       </>}
   </main>
 }

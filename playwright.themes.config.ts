@@ -5,5 +5,5 @@ if (!['localhost', '127.0.0.1'].includes(url.hostname)) throw new Error('Theme t
 export default defineConfig({
   testDir: './tests/themes-browser', workers: 1, timeout: 90_000,
   use: { baseURL: origin, trace: 'retain-on-failure' },
-  webServer: { command: `pnpm exec vite --host ${url.hostname} --port ${url.port || '3127'} --strictPort`, url: origin, reuseExistingServer: !process.env.CI, timeout: 60_000 },
+  webServer: { command: `pnpm exec vite --host ${url.hostname} --port ${url.port || '3127'} --strictPort`, url: origin, reuseExistingServer: false, timeout: 60_000 },
 })
