@@ -1,0 +1,26 @@
+/* The browser interpolates the shared card's bounds between committed routes.
+   No full-screen fade: scenery and chrome stay visually steady. */
+::view-transition { pointer-events: none; }
+.scene-panel, .guild-editor, .guild-welcome { view-transition-name: scene-panel; }
+.scene-panel-content { display: flow-root; }
+.account-main { display: flex; flex-direction: column; align-items: center; }
+.account-card { margin-block: auto; flex-shrink: 0; }
+.scene-panel[data-resizing] { overflow: clip; }
+.world-scene { view-transition-name: scene-backdrop; }
+::view-transition-group(root),
+::view-transition-old(root),
+::view-transition-new(root),
+::view-transition-group(scene-backdrop),
+::view-transition-old(scene-backdrop),
+::view-transition-new(scene-backdrop) { animation: none; }
+::view-transition-old(root), ::view-transition-old(scene-backdrop) { display: none; }
+::view-transition-group(scene-panel) { animation-duration: 300ms; animation-timing-function: cubic-bezier(.22, 1, .36, 1); }
+::view-transition-image-pair(scene-panel) { isolation: isolate; }
+::view-transition-old(scene-panel) { animation: panel-out 120ms ease-out both; mix-blend-mode: normal; }
+::view-transition-new(scene-panel) { animation: panel-in 220ms ease-out 50ms both; mix-blend-mode: normal; }
+@keyframes panel-out { to { opacity: 0; } }
+@keyframes panel-in { from { opacity: 0; } }
+@media(prefers-reduced-motion: reduce) {
+  ::view-transition-group(*), ::view-transition-old(*), ::view-transition-new(*) { animation: none !important; }
+  ::view-transition-old(scene-panel) { display: none; }
+}

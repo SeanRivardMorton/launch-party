@@ -6,6 +6,7 @@ import { Input } from '@/components/ui/input'
 import { authClient } from '@/lib/auth-client'
 import { requireAccount } from '@/lib/auth.functions'
 import { CharacterOverview } from '@/components/account-overview'
+import { AppLink } from '@/components/app-link'
 
 export const Route = createFileRoute('/account')({
   beforeLoad: async () => ({ user: await requireAccount() }),
@@ -24,8 +25,8 @@ function AccountPage() {
   const [ready, setReady] = useState(false)
   useEffect(() => setReady(true), [])
   useEffect(() => {
-    if (!session.isPending && !session.error && !session.data) window.location.replace('/login?returnTo=%2Faccount')
-  }, [session.isPending, session.error, session.data])
+    if (pending !== 'signout' && !session.isPending && !session.error && !session.data) window.location.replace('/login?returnTo=%2Faccount')
+  }, [session.isPending, session.error, session.data, pending])
 
   async function save(event: FormEvent<HTMLFormElement>) {
     event.preventDefault()
@@ -68,6 +69,6 @@ function AccountPage() {
     {message && <p className="account-note" role="status">{message}</p>}
     {error && <p className="form-error" role="alert">{error}</p>}
     </section>
-    <div className="account-footer"><a href="/">Back to the campfire</a><Button variant="outline" disabled={!ready || Boolean(pending)} onClick={signOut}>{pending === 'signout' ? 'Signing out…' : 'Sign out'}</Button></div>
+    <div className="account-footer"><AppLink href="/">Back to the campfire</AppLink><Button variant="outline" disabled={!ready || Boolean(pending)} onClick={signOut}>{pending === 'signout' ? 'Signing out…' : 'Sign out'}</Button></div>
   </AccountShell>
 }

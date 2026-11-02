@@ -3,6 +3,8 @@ import { authClient } from '@/lib/auth-client'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { WorldScene } from '@/components/world-scene'
+import { ScenePanel } from './scene-panel'
+import { AppLink } from './app-link'
 import './guild-community.css'
 
 export function GuildAuthGate({ children, title = 'Your place in the guild.' }: { children: ReactNode; title?: string }) {
@@ -31,8 +33,8 @@ export function GuildAuthGate({ children, title = 'Your place in the guild.' }: 
 
   if (session.data?.user) return children
   return <main className="site signup-page guild-community-page"><WorldScene />
-    <section className="signup-card" aria-labelledby={id}>
-      <nav className="guild-nav"><a href="/guilds">← Guild directory</a></nav>
+    <ScenePanel className="signup-card" aria-labelledby={id}>
+      <nav className="guild-nav"><AppLink href="/guilds">← Guild directory</AppLink></nav>
       <div className="dialog-kicker">GUILD ACCOUNT</div>
       <h2 id={id}>{title}</h2>
       {session.isPending ? <p role="status" className="dialog-description">Checking your account…</p> : <>
@@ -50,6 +52,6 @@ export function GuildAuthGate({ children, title = 'Your place in the guild.' }: 
         </form>
         <Button type="button" variant="ghost" disabled={busy} onClick={() => { setRegister(!register); setError('') }}>{register ? 'Already have an account? Sign in' : 'New here? Create an account'}</Button>
       </>}
-    </section>
+    </ScenePanel>
   </main>
 }

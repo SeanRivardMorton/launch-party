@@ -1,13 +1,16 @@
 import { Fragment, useEffect, useRef, useState, type FormEvent } from 'react'
-import { Link } from '@tanstack/react-router'
+import { Link, useRouter } from '@tanstack/react-router'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { AccountShell } from '@/components/account-shell'
 import { authClient } from '@/lib/auth-client'
 import { safeReturnTo } from '@/lib/auth-navigation'
 import { GoogleSignIn } from '@/components/google-sign-in'
+import { AppLink } from './app-link'
 
 export function AccountForm({ register, available, returnTo, embedded, socialError }: { register?: boolean; available: boolean; returnTo: string; embedded?: boolean; socialError?: boolean }) {
+  const router = useRouter()
+  const session = authClient.useSession()
   const [pending, setPending] = useState(false)
   const [error, setError] = useState('')
   const errorRef = useRef<HTMLParagraphElement>(null)
@@ -41,8 +44,13 @@ export function AccountForm({ register, available, returnTo, embedded, socialErr
           : 'Email or password is incorrect. Check both and try again.')
         return
       }
-      // Full navigation drops stale route/session data and rechecks the server session.
-      window.location.assign(safeReturnTo(returnTo))
+      const destination = safeReturnTo(returnTo)
+      // Home has no private loader cache: refresh its session and morph the panel
+      // in place. Private return destinations still get a clean document/session.
+      if (destination === '/') {
+        await session.refetch()
+        if (!embedded) await router.navigate({ to: '/' })
+      } else window.location.assign(destination)
     } catch { fail('Connection interrupted. Check your connection and try again.') }
     finally { setPending(false) }
   }
@@ -64,7 +72,7 @@ export function AccountForm({ register, available, returnTo, embedded, socialErr
         <div className="password-tools">{register && <span id="password-help">At least 12 characters.</span>}<button type="button" aria-pressed={showPassword} onClick={() => setShowPassword(!showPassword)}>{showPassword ? 'Hide password' : 'Show password'}</button></div>
         {error && <p className="form-error" role="alert" ref={errorRef} tabIndex={-1}>{error}</p>}
         <div className="form-actions"><Button type="submit" disabled={!ready || pending}>{pending ? register ? 'Creating account…' : 'Signing in…' : register ? 'Create account' : 'Sign in'}</Button></div>
-        {!register && <p className="account-note"><a href="/forgot-password">Forgot your password?</a></p>}
+        {!register && <p className="account-note"><AppLink href="/forgot-password">Forgot your password?</AppLink></p>}
       </form>
       <GoogleSignIn returnTo={returnTo} disabled={pending} />
       <p className="account-switch">{register ? 'Already have an account? ' : 'New here? '}<Link to={register ? '/login' : '/register'} search={{ returnTo }}>{register ? 'Sign in' : 'Create an account'}</Link></p>
