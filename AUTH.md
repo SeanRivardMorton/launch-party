@@ -25,7 +25,44 @@ Missing DB/auth configuration, or a failed session lookup, produces an unavailab
 
 Saved campfire characters have no fulfillable-role field, so the overview says it is not collected rather than inventing roles from class. Guild characters show their actual saved roles. These independent profiles are never silently synchronized or selected as a canonical character. Artwork uses the existing authenticated avatar endpoint; animated sheets show their first frame. Missing artwork, image failure/retry, no character/membership/application, loading, network/server failure/retry and expired sessions have distinct states. Client results are discarded when the session identity changes or the disclosure closes; no private overview cache/localStorage is introduced.
 
-No OAuth, reset-password or verification actions are shown because there are no configured providers or email delivery. The UI states that password recovery/verification are unavailable. Account screens require JavaScript. Like the current public forms, short/mobile-keyboard/landscape viewports can scroll **inside the content area**, with a fixed document and no horizontal clipping; this is not completion of the PRD's future all-screens/no-scroll milestone.
+Optional Google sign-in and password recovery are configured server-side as described below; email verification delivery is not implemented. Account screens require JavaScript. Like the current public forms, short/mobile-keyboard/landscape viewports can scroll **inside the content area**, with a fixed document and no horizontal clipping; this is not completion of the PRD's future all-screens/no-scroll milestone.
+
+## Optional Google and password recovery backend
+
+`getAuthFeatures` from `src/lib/auth-features.functions.ts` is a GET server function returning exactly `{ google: boolean, passwordReset: boolean }`, with `Cache-Control: no-store`. It exposes configuration readiness, **not** a provider health/delivery guarantee. Both flags are false without `DB`, `BETTER_AUTH_SECRET` or `BETTER_AUTH_URL`. Each provider additionally requires both of its nonblank settings below. Missing optional configuration leaves normal email/password sign-in functional; partial Google configuration does not register Google, and partial recovery configuration does not register a reset sender. Credentials/options never enter the public DTO. UI/routes are integrated separately.
+
+### Google external setup (operator action)
+
+Create a Google OAuth **Web application** client, configure the consent screen, and supply `GOOGLE_CLIENT_ID` and `GOOGLE_CLIENT_SECRET` as private Worker configuration (ignored `.dev.vars` locally). Set `BETTER_AUTH_URL=https://launchparty.thunkoid.com` in production. Register these exact authorized redirect URIs as appropriate:
+
+- Production: `https://launchparty.thunkoid.com/api/auth/callback/google`
+- Default local development: `http://localhost:3000/api/auth/callback/google`
+- Local auth verification on port 3119: `http://localhost:3119/api/auth/callback/google`
+- For another local port, register `http://localhost:<port>/api/auth/callback/google` exactly and match `BETTER_AUTH_URL`. A `127.0.0.1` origin is distinct and requires its own exact registration if used.
+
+Only Better Auth's default Google scopes (`openid`, `email`, `profile`) are requested. There is no custom profile mapping, ID-token verification, provider endpoint or `trustedProviders` override. Better Auth's verified-provider-email checks govern same-email account linking; different emails are not allowed to link by an application override. Existing email identities, accounts and deployed secret are preserved. Configure Google test users while the consent screen is in testing, or complete Google's publishing/verification requirements as applicable. Do not treat an OAuth account as a guild membership or Battle.net identity.
+
+### Resend external setup (operator action)
+
+In Resend, add a sending domain you control, install the DNS records Resend supplies (including SPF/DKIM), and wait for verified status. Create an API key authorized to send from that domain. Supply private `RESEND_API_KEY` and `AUTH_EMAIL_FROM`, for example `Launch Party <accounts@your-verified-domain.example>`. The sender must belong to the verified domain; a configured but unverified sender will still show the capability but delivery will fail. Resend sandbox/test sender restrictions do not constitute production delivery setup. Use a controlled recipient and separately verify delivery after provisioning; no real credentials or delivery were used in backend tests.
+
+`src/lib/reset-email.server.ts` sends plain text via REST `POST https://api.resend.com/emails`, with a ten-second timeout, no redirects, no dependency and no configurable provider URL. It sends the exact URL Better Auth supplies, not a separately constructed token or frontend URL. No email outbox/debug endpoint exists. HTTP/network errors are sanitized before Better Auth logs them: no recipient, reset URL/token, API key, raw response body or original provider exception is logged. A Resend acceptance response is not proof of inbox delivery; monitor delivery/bounces in Resend separately.
+
+Better Auth's `advanced.backgroundTasks.handler` uses the actual request-scoped `waitUntil` imported from `cloudflare:workers`. Reset dispatch is registered with that supported background-task mechanism, **not** awaited on the response path and not a bare fire-and-forget promise. Existing/missing accounts retain Better Auth's same generic success body, without introducing a Resend-latency existence oracle. Delivery failures are logged safely in the background, never changed into account-specific public errors. Cloudflare permits up to 30 seconds of background execution after response/disconnect; the ten-second send timeout fits within that bound. This is best-effort dispatch, not a durable queue or automatic retry system.
+
+Recovery uses Better Auth's `requestPasswordReset({ email, redirectTo })` and `resetPassword({ token, newPassword })` APIs. Pass a same-origin recovery page as `redirectTo`; Better Auth checks trusted origins and handles the emailed callback. The existing D1 `verification` table stores reset records. Better Auth retains its one-hour token expiry, single-use validation and generic account-existence response; no custom token flow is implemented. The twelve-character password minimum remains enforced, and `revokeSessionsOnPasswordReset: true` revokes existing sessions. D1 does not support Better Auth's adapter transactions: if a database failure occurs after token consumption/session revocation but before the password write, users may need a new reset link. No new migrations, resources, production secret writes or deployments are part of this change.
+
+### Backend verification
+
+```sh
+pnpm exec vitest run tests/auth-providers.test.ts
+pnpm check
+pnpm build
+```
+
+The backend tests use the installed real Better Auth 1.7.15, real Drizzle D1 adapter and the auth SQL migration against an in-memory SQLite D1-statement shim. They cover public flags/no-store/GET contract, partial and missing configuration, actual Google configuration/default authorization scopes/callback construction, email-only signup/signin, Resend payload and sanitized HTTP/network failures, background registration without waiting on email, generic missing/existing responses, valid callback token forwarding, short-password rejection without consuming the token, successful reset, old/new passwords, expiry, token reuse rejection, session revocation, hostile redirect rejection and safe background error logging. Cloudflare `waitUntil` and Resend are mocked; these checks are not a real Workers lifecycle, Google callback or inbox-delivery test. No UI/recovery-route test is claimed by this backend-only change.
+
+Verified locally on 2 November 2026: `pnpm install --frozen-lockfile`, `pnpm test` (46 tests, including seven backend provider tests), `pnpm check` and `pnpm build`. Build has the existing CSS sourcemap warning; Node reports its experimental SQLite warning. No generated route tree changes were needed.
 
 ## Repeatable local verification
 
@@ -74,6 +111,10 @@ When integrating that branch, replace its local sign-in UI with `/login?returnTo
 
 - https://www.better-auth.com/docs/integrations/tanstack — SDK actions, mounted handler, last-position `tanstackStartCookies`, server session checks.
 - https://www.better-auth.com/docs/authentication/email-password — signup/signin/signout, duplicate-account behavior, provider/delivery requirements.
+- https://www.better-auth.com/docs/authentication/google — Google configuration and exact callback URI registration.
+- https://www.better-auth.com/docs/reference/options#backgroundtasks — supported Cloudflare background task handler; also checked installed Better Auth 1.7.15 types and reset implementation.
+- https://developers.cloudflare.com/changelog/2025-08-08-add-waituntil-cloudflare-workers/ — direct request-context `waitUntil` import (also checked installed Workers types).
+- https://developers.cloudflare.com/workers/runtime-apis/context/#waituntil — request lifetime and 30-second background limit.
 - https://www.better-auth.com/docs/concepts/cookies — standard cookie persistence and security defaults.
 - https://tanstack.com/start/latest/docs/framework/react/guide/server-functions — server-only handlers, authentication at the data boundary and private response caching.
 

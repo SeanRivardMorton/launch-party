@@ -2,6 +2,14 @@
 BETTER_AUTH_SECRET=replace-with-at-least-32-random-characters
 BETTER_AUTH_URL=http://localhost:3000
 
+# Optional Google sign-in: both required. Register the exact callback in AUTH.md.
+# GOOGLE_CLIENT_ID=
+# GOOGLE_CLIENT_SECRET=
+
+# Optional password recovery: both required. Use a Resend-verified sender domain.
+# RESEND_API_KEY=
+# AUTH_EMAIL_FROM=Launch Party <accounts@your-verified-domain.example>
+
 # Optional: generation is OFF unless explicitly enabled and a key is available.
 # Verify model access and budget before enabling. Never put real credentials here.
 # OPENAI_API_KEY=
