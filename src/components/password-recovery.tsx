@@ -4,6 +4,7 @@ import { Button } from './ui/button'
 import { Input } from './ui/input'
 import { useAuthFeatures } from './google-sign-in'
 import { authClient } from '@/lib/auth-client'
+import { AppLink } from './app-link'
 
 export function PasswordRecovery({ reset, token, invalid }: { reset?: boolean; token?: string; invalid?: boolean }) {
   const { features, error: configError, retry } = useAuthFeatures()
@@ -28,9 +29,9 @@ export function PasswordRecovery({ reset, token, invalid }: { reset?: boolean; t
     } catch { setError('Connection interrupted. Please try again.') }
     finally { setPending(false) }
   }
-  return <AccountShell><div className="dialog-kicker">AI-ZEROTH · ACCOUNT RECOVERY</div><h1 id="account-title">{reset ? 'Choose a new password.' : 'Find your way back.'}</h1>{success ? <div role="status"><p>{reset ? 'Your password has been updated. Sign in with your new password.' : 'If an account can be recovered with that email, we’ll send a password reset link. Check your inbox and spam folder.'}</p><p className="account-note"><a href="/">Back to sign in</a></p></div> : reset && (!token || invalid) ? <div role="alert"><p>This password reset link is missing, invalid or expired.</p><a href="/forgot-password">Request a new link</a></div> : <>
+  return <AccountShell><div className="dialog-kicker">AI-ZEROTH · ACCOUNT RECOVERY</div><h1 id="account-title">{reset ? 'Choose a new password.' : 'Find your way back.'}</h1>{success ? <div role="status"><p>{reset ? 'Your password has been updated. Sign in with your new password.' : 'If an account can be recovered with that email, we’ll send a password reset link. Check your inbox and spam folder.'}</p><p className="account-note"><AppLink href="/">Back to sign in</AppLink></p></div> : reset && (!token || invalid) ? <div role="alert"><p>This password reset link is missing, invalid or expired.</p><AppLink href="/forgot-password">Request a new link</AppLink></div> : <>
     <p className="dialog-description">{reset ? 'Use at least 12 characters. Your other sessions will be signed out.' : 'Enter the email you use for your account. We’ll send a link to reset your password.'}</p>
     {configError ? <p role="alert">Couldn’t check account recovery. <button type="button" onClick={retry}>Retry</button></p> : features && !features.passwordReset ? <p role="status">Password recovery is temporarily unavailable. Please try again later.</p> : <form method="post" onSubmit={submit} aria-busy={pending}><fieldset className="field-grid" disabled={!ready || pending || !features?.passwordReset}>{reset ? <><label>New password<Input name="password" type="password" autoComplete="new-password" required minLength={12} maxLength={128} /></label><label>Confirm new password<Input name="confirm" type="password" autoComplete="new-password" required minLength={12} maxLength={128} /></label></> : <label>Email<Input name="email" type="email" autoComplete="email" required maxLength={254} /></label>}<Button type="submit">{pending ? 'Please wait…' : reset ? 'Save new password' : 'Send reset link'}</Button></fieldset></form>}
     {error && <p role="alert" className="form-error">{error}</p>}
-  </>}<div className="account-footer"><a href="/">Back to sign in</a>{reset && !success && <a href="/forgot-password">Request a new link</a>}</div></AccountShell>
+  </>}<div className="account-footer"><AppLink href="/">Back to sign in</AppLink>{reset && !success && <AppLink href="/forgot-password">Request a new link</AppLink>}</div></AccountShell>
 }

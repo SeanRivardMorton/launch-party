@@ -4,6 +4,8 @@ import { useEffect, useState } from 'react'
 import { ArrowLeft, ArrowRight, Plus } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { WorldScene } from '@/components/world-scene'
+import { ScenePanel } from '@/components/scene-panel'
+import { AppLink } from '@/components/app-link'
 import { GuildNeeds } from '@/components/guild-needs'
 import { factions } from '@/lib/interest'
 import { regions, type Guild } from '@/lib/guilds'
@@ -41,8 +43,8 @@ function GuildDirectory() {
 
   return <main className="site signup-page">
     <WorldScene />
-    <section className="signup-card guild-directory" aria-labelledby="guilds-title">
-      <nav className="guild-nav" aria-label="Guild navigation"><a href="/" aria-label="Back to campfire"><ArrowLeft size={18} /></a><a href="/guilds/new"><Plus size={14} />List a guild</a></nav>
+    <ScenePanel className="signup-card guild-directory" aria-labelledby="guilds-title">
+      <nav className="guild-nav" aria-label="Guild navigation"><AppLink href="/" aria-label="Back to campfire"><ArrowLeft size={18} /></AppLink><AppLink href="/guilds/new"><Plus size={14} />List a guild</AppLink></nav>
       <div className="dialog-kicker">AI-ZEROTH · GUILD DIRECTORY</div>
       <h2 id="guilds-title">Find your next guild.</h2>
       <p className="dialog-description">Meet a crew and visit their guild page to register interest in joining.</p>
@@ -56,11 +58,11 @@ function GuildDirectory() {
           <h3>{guild.name}</h3>
           <p className="guild-description">{guild.description}</p>
           {guild.recruitmentNeeds.length > 0 && <GuildNeeds needs={guild.recruitmentNeeds} compact />}
-          <a className="button button-primary" href={guild.path}>View guild<ArrowRight size={16} /></a>
-        </article> : <div className="empty-state"><p>No guilds listed{faction || region ? ' with these filters' : ' yet'}. Start the party.</p><a className="button button-outline" href="/guilds/new">List your guild<Plus size={16} /></a></div>}
+          <AppLink className="button button-primary" href={guild.path}>View guild<ArrowRight size={16} /></AppLink>
+        </article> : <div className="empty-state"><p>No guilds listed{faction || region ? ' with these filters' : ' yet'}. Start the party.</p><AppLink className="button button-outline" href="/guilds/new">List your guild<Plus size={16} /></AppLink></div>}
       </div>
       <div className="directory-pagination"><Button variant="ghost" disabled={page === 0 || status === 'loading'} onClick={() => setPage(page - 1)}><ArrowLeft size={16} />Previous</Button><span>{page + 1}</span><Button variant="ghost" disabled={!hasMore || status !== 'ready'} onClick={() => setPage(page + 1)}>Next<ArrowRight size={16} /></Button></div>
-      <a className="directory-signup" href="/signup">Join the ai-zeroth interest list<ArrowRight size={14} /></a>
-    </section>
+      <AppLink className="directory-signup" href="/signup">Join the ai-zeroth interest list<ArrowRight size={14} /></AppLink>
+    </ScenePanel>
   </main>
 }

@@ -11,6 +11,8 @@ import { factions } from '@/lib/interest'
 import { regions, type RecruitmentNeed } from '@/lib/guilds'
 import { createManagementKey, saveGuildManagementKey } from '@/lib/guild-management'
 import { GuildAuthGate } from '@/components/guild-account-panel'
+import { ScenePanel } from '@/components/scene-panel'
+import { AppLink } from '@/components/app-link'
 
 export const Route = createFileRoute('/guilds/new')({ component: ListGuild })
 
@@ -51,9 +53,9 @@ function ListGuild() {
 
   return <GuildAuthGate title="Sign in to lead a guild"><main className="site signup-page">
     <WorldScene />
-    <section className="signup-card" aria-labelledby="list-guild-title">
-      {status === 'success' ? <div className="success-state"><span className="success-icon"><CheckCheck size={30} /></span><h2 id="list-guild-title">Your party is forming.</h2><p>Your guild now has its own Launchparty page. Share your invite link so people can learn about your crew and apply to join.</p><GuildInvite path={path} /><p>Your account is the guild lead. Open the guild hall to review applicants, appoint officers and manage plans.</p><a className="button button-primary" href={`${path}/manage`}>Open guild hall<ArrowRight size={16} /></a><a className="directory-signup" href={path}>View my guild<ArrowRight size={14} /></a></div> : <>
-        <nav className="guild-nav"><a href="/guilds"><ArrowLeft size={16} />Guild directory</a></nav>
+    <ScenePanel className="signup-card" aria-labelledby="list-guild-title">
+      {status === 'success' ? <div className="success-state"><span className="success-icon"><CheckCheck size={30} /></span><h2 id="list-guild-title">Your party is forming.</h2><p>Your guild now has its own Launchparty page. Share your invite link so people can learn about your crew and apply to join.</p><GuildInvite path={path} /><p>Your account is the guild lead. Open the guild hall to review applicants, appoint officers and manage plans.</p><AppLink className="button button-primary" href={`${path}/manage`}>Open guild hall<ArrowRight size={16} /></AppLink><AppLink className="directory-signup" href={path}>View my guild<ArrowRight size={14} /></AppLink></div> : <>
+        <nav className="guild-nav"><AppLink href="/guilds"><ArrowLeft size={16} />Guild directory</AppLink></nav>
         <div className="dialog-kicker">LIST YOUR GUILD <span className="step-count">{step + 1} / 3</span></div>
         <h2 id="list-guild-title">{['Make room at the fire.', 'Invite your next crew.', 'What’s your party missing?'][step]}</h2>
         <p className="dialog-description">{['Help prospective members find your guild.', 'Tell people about your crew. We’ll create your guild page and invite link.', 'Help newcomers choose a class, role or profession your crew needs.'][step]}</p>
@@ -76,6 +78,6 @@ function ListGuild() {
           <div className="form-actions">{step > 0 && <Button type="button" variant="ghost" disabled={status === 'sending'} onClick={() => { setStep(step - 1); setStatus('idle'); setError('') }}><ArrowLeft size={16} />Back</Button>}<Button type="submit" disabled={status === 'sending'}>{step < 2 ? 'Next' : status === 'sending' ? 'Publishing…' : 'Publish guild'}<ArrowRight size={16} /></Button></div>
         </form>
       </>}
-    </section>
+    </ScenePanel>
   </main></GuildAuthGate>
 }

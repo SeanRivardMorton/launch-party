@@ -101,6 +101,8 @@ try {
   console.log('PASS register/login-to-home, saved character, approved guild, calendar browsing, keyboard menu and signout')
 
   await page.getByRole('link', { name: 'Forgot your password?' }).click()
+  await page.waitForURL('**/forgot-password')
+  await expect(page.getByRole('heading', { name: 'Find your way back.' })).toBeVisible()
   await page.getByLabel('Email', { exact: true }).fill(`missing-${randomUUID()}@example.invalid`)
   await page.getByRole('button', { name: 'Send reset link' }).click()
   await expect(page.getByText('If an account can be recovered', { exact: false })).toBeVisible()

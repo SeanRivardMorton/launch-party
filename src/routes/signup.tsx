@@ -9,6 +9,8 @@ import { GuildNeeds } from '@/components/guild-needs'
 import { getRoles, needs, professions, type Role } from '@/lib/interest'
 import { factions, getClasses, getRaces, raceLabel, type CharacterClass, type Faction, type Race } from '@/lib/character-options'
 import { useGuild } from '@/lib/use-guild'
+import { ScenePanel } from '@/components/scene-panel'
+import { AppLink } from '@/components/app-link'
 
 export const Route = createFileRoute('/signup')({
   validateSearch: (search: Record<string, unknown>): { guild?: string } => ({ guild: typeof search.guild === 'string' && search.guild ? search.guild : undefined }),
@@ -74,17 +76,17 @@ function SignupPage() {
     }
   }
 
-  if (guildId && (guildLoading || guildError || !guild)) return <main className="site signup-page"><WorldScene /><section className="signup-card">{guildLoading ? <p role="status">Finding your guild…</p> : <><h2>Guild unavailable.</h2><p className="dialog-description" role="alert">{guildError}</p><Button variant="outline" onClick={retryGuild}>Try again</Button><a className="directory-signup" href="/guilds">Browse other guilds<ArrowRight size={14} /></a></>}</section></main>
+  if (guildId && (guildLoading || guildError || !guild)) return <main className="site signup-page"><WorldScene /><ScenePanel className="signup-card">{guildLoading ? <p role="status">Finding your guild…</p> : <><h2>Guild unavailable.</h2><p className="dialog-description" role="alert">{guildError}</p><Button variant="outline" onClick={retryGuild}>Try again</Button><a className="directory-signup" href="/guilds">Browse other guilds<ArrowRight size={14} /></a></>}</ScenePanel></main>
 
   return <main className="site signup-page">
     <WorldScene />
-    <section className="signup-card" aria-labelledby="signup-title">
+    <ScenePanel className="signup-card" aria-labelledby="signup-title">
       {status === 'success' ? <div className="success-state" role="status">
         <span className="success-icon"><CheckCheck size={30} /></span>
         <h2 id="signup-title">{guild ? 'Interest registered.' : 'A place by the fire.'}</h2>
         <p>{guild ? `We’ve saved your interest in joining ${guild.name}. You’re also on the ai-zeroth interest list.` : 'You’re on the ai-zeroth interest list. We’ll email you when there’s news.'}</p>
-        {guild ? <a className="button button-primary" href={guild.path}>Back to the guild<ArrowRight size={16} /></a> : guildIntent !== 'later' && <a className="button button-primary" href={guildIntent === 'list' ? '/guilds/new' : '/guilds'}>{guildIntent === 'list' ? 'List my guild' : 'Find a guild'}<ArrowRight size={16} /></a>}
-        <a className="button button-primary" href="/">Back to the campfire <ArrowRight size={16} /></a>
+        {guild ? <AppLink className="button button-primary" href={guild.path}>Back to the guild<ArrowRight size={16} /></AppLink> : guildIntent !== 'later' && <AppLink className="button button-primary" href={guildIntent === 'list' ? '/guilds/new' : '/guilds'}>{guildIntent === 'list' ? 'List my guild' : 'Find a guild'}<ArrowRight size={16} /></AppLink>}
+        <AppLink className="button button-primary" href="/">Back to the campfire <ArrowRight size={16} /></AppLink>
       </div> : <>
         <div className="dialog-kicker">AI-ZEROTH <span className="step-count">{step + 1} / 4</span></div>
         {guild && <p className="guild-context">Joining {guild.name} · {guild.faction} · {guild.region}</p>}
@@ -122,6 +124,6 @@ function SignupPage() {
           <div className="form-actions">{step > 0 && <Button type="button" variant="ghost" disabled={status === 'sending'} onClick={() => { setStep(step - 1); setStatus('idle'); setError('') }}><ArrowLeft size={16} />Back</Button>}<Button type="submit" disabled={status === 'sending'}>{step < 3 ? 'Next' : status === 'sending' ? 'Saving your seat…' : 'Count me in'}<ArrowRight size={16} /></Button></div>
         </form>
       </>}
-    </section>
+    </ScenePanel>
   </main>
 }

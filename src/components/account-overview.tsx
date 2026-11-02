@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react'
 import type { AccountOverview } from '@/lib/account-overview'
+import { AppLink } from './app-link'
 
 export function useAccountOverview(active: string | false) {
   const [state, setState] = useState<{ key?: string; data?: AccountOverview; error?: string; expired?: boolean }>({})
@@ -65,24 +66,24 @@ export function CharacterOverview({ active, section = 'all' }: { active: string 
         <p>{campfire.published ? 'Published to campfire guildmates' : 'Unpublished · visible here only to you'}</p>
         {campfire.bio && <p>{campfire.bio}</p>}
         {campfire.avatarUrl ? <SavedAvatar url={campfire.avatarUrl} format={campfire.avatarFormat} /> : <p>No saved avatar artwork. The campfire uses a fallback sprite.</p>}
-        <a href="/campfire?edit=1">Edit campfire character</a>
-      </article> : <p>No saved campfire character. <a href="/campfire?edit=1">Create a campfire character</a>.</p>}
+        <AppLink href="/campfire?edit=1">Edit campfire character</AppLink>
+      </article> : <p>No saved campfire character. <AppLink href="/campfire?edit=1">Create a campfire character</AppLink>.</p>}
       {memberships.map(membership => <article className="character-card" key={membership.guildId}>
         <h3>{membership.guildName} · guild character</h3><CharacterDetails profile={membership.profile} />
-        <a href={`/guilds/${encodeURIComponent(membership.guildId)}/manage#my-character`}>Edit this guild character</a>
+        <AppLink href={`/guilds/${encodeURIComponent(membership.guildId)}/manage#my-character`}>Edit this guild character</AppLink>
       </article>)}
     </section>}
     {section !== 'characters' && <><section id="guilds" className="account-section" aria-labelledby="my-guilds-title"><h2 id="my-guilds-title">My guilds</h2>
       {memberships.length ? <ul className="account-guild-list">{memberships.map(membership => <li key={membership.guildId}>
         <strong>{membership.guildName}</strong><span>Approved membership · {membership.role}</span>
-        <a href={`/guilds/${encodeURIComponent(membership.guildId)}/manage`}>Guild hall</a>
-        {membership.campfireAvailable ? <a href={`/campfire?guild=${encodeURIComponent(membership.guildId)}`}>Guild campfire</a> : <span>Open the guild hall to sync campfire access.</span>}
-      </li>)}</ul> : <p>No approved guild memberships yet. <a href="/guilds">Explore guilds</a> to apply. An interest signup or private management link is not membership.</p>}
+        <AppLink href={`/guilds/${encodeURIComponent(membership.guildId)}/manage`}>Guild hall</AppLink>
+        {membership.campfireAvailable ? <AppLink href={`/campfire?guild=${encodeURIComponent(membership.guildId)}`}>Guild campfire</AppLink> : <span>Open the guild hall to sync campfire access.</span>}
+      </li>)}</ul> : <p>No approved guild memberships yet. <AppLink href="/guilds">Explore guilds</AppLink> to apply. An interest signup or private management link is not membership.</p>}
     </section>
     <section className="account-section" aria-labelledby="applications-title"><h2 id="applications-title">My applications</h2>
       {applications.length ? applications.map(application => <article className="character-card" key={application.guildId}><h3>{application.guildName} · {application.status}</h3>
         <p>{application.status === 'pending' ? 'Awaiting approval. This is not a guild membership.' : 'Not approved. You can review the guild and apply again.'}</p>
-        <CharacterDetails profile={application.profile} /><a href={`/guilds/${encodeURIComponent(application.guildId)}/apply`}>View application / guild</a>
+        <CharacterDetails profile={application.profile} /><AppLink href={`/guilds/${encodeURIComponent(application.guildId)}/apply`}>View application / guild</AppLink>
       </article>) : <p>No pending or declined applications.</p>}
     </section></>}
   </>

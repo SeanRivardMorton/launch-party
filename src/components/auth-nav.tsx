@@ -1,6 +1,7 @@
 import { authClient } from '@/lib/auth-client'
 import { useEffect, useRef, useState } from 'react'
 import { OverviewStatus, useAccountOverview } from './account-overview'
+import { AppLink } from './app-link'
 
 export function AuthNav() {
   const { data, isPending, error, refetch } = authClient.useSession()
@@ -43,15 +44,15 @@ export function AuthNav() {
     }
   }}>
     {isPending ? <span role="status">Account…</span> : error ? <button className="account-nav-link" onClick={() => void refetch()}>Account unavailable · retry</button>
-      : !authenticated ? <a className="account-nav-link" href="/login">Sign in</a>
+      : !authenticated ? <AppLink className="account-nav-link" href="/login">Sign in</AppLink>
         : <><button ref={trigger} className="account-nav-link" aria-expanded={open} aria-controls="account-navigation" onClick={() => setOpen(value => !value)} onKeyDown={event => {
           if (!open && event.key === 'ArrowDown') { event.preventDefault(); setOpen(true) }
         }}>My account <span aria-hidden="true">▾</span></button>
           {open && <div ref={panel} id="account-navigation" className="account-menu">
-            <a href="/characters">Characters</a><a href="/guild">Guild</a><a href="/calendar">Calendar</a>
-            {overview.data ? <>{overview.data.memberships.length ? overview.data.memberships.map(guild => <div key={guild.guildId}><a href={`/guilds/${encodeURIComponent(guild.guildId)}/manage`}>{guild.guildName} · guild hall</a>{guild.campfireAvailable && <a href={`/campfire?guild=${encodeURIComponent(guild.guildId)}`}>{guild.guildName} · campfire</a>}</div>) : <p>No approved guild memberships.</p>}
-              {overview.data.applications.some(application => application.status === 'pending') && <a href="/account#applications-title">Pending applications (not memberships)</a>}</> : !busy && <OverviewStatus state={overview} />}
-            <a href="/account#account-settings">Account settings</a>
+            <AppLink href="/characters">Characters</AppLink><AppLink href="/guild">Guild</AppLink><AppLink href="/calendar">Calendar</AppLink>
+            {overview.data ? <>{overview.data.memberships.length ? overview.data.memberships.map(guild => <div key={guild.guildId}><AppLink href={`/guilds/${encodeURIComponent(guild.guildId)}/manage`}>{guild.guildName} · guild hall</AppLink>{guild.campfireAvailable && <AppLink href={`/campfire?guild=${encodeURIComponent(guild.guildId)}`}>{guild.guildName} · campfire</AppLink>}</div>) : <p>No approved guild memberships.</p>}
+              {overview.data.applications.some(application => application.status === 'pending') && <AppLink href="/account#applications-title">Pending applications (not memberships)</AppLink>}</> : !busy && <OverviewStatus state={overview} />}
+            <AppLink href="/account#account-settings">Account settings</AppLink>
             <button disabled={busy} onClick={signOut}>{busy ? 'Signing out…' : 'Sign out'}</button>
             {signoutError && <p role="alert">{signoutError}</p>}
           </div>}
