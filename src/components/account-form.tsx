@@ -1,12 +1,13 @@
-import { useEffect, useRef, useState, type FormEvent } from 'react'
+import { Fragment, useEffect, useRef, useState, type FormEvent } from 'react'
 import { Link } from '@tanstack/react-router'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { AccountShell } from '@/components/account-shell'
 import { authClient } from '@/lib/auth-client'
 import { safeReturnTo } from '@/lib/auth-navigation'
+import { GoogleSignIn } from '@/components/google-sign-in'
 
-export function AccountForm({ register, available, returnTo }: { register?: boolean; available: boolean; returnTo: string }) {
+export function AccountForm({ register, available, returnTo, embedded, socialError }: { register?: boolean; available: boolean; returnTo: string; embedded?: boolean; socialError?: boolean }) {
   const [pending, setPending] = useState(false)
   const [error, setError] = useState('')
   const errorRef = useRef<HTMLParagraphElement>(null)
@@ -46,10 +47,12 @@ export function AccountForm({ register, available, returnTo }: { register?: bool
     finally { setPending(false) }
   }
 
-  return <AccountShell>
+  const Shell = embedded ? Fragment : AccountShell
+  return <Shell>
     <div className="dialog-kicker">AI-ZEROTH · YOUR ACCOUNT</div>
     <h1 id="account-title">{register ? 'Your next adventure.' : 'Welcome back.'}</h1>
-    <p className="dialog-description">{register ? 'Create an account for your next steps in ai-zeroth. This is separate from the interest list; it won’t publish a player card or join a guild.' : 'Sign in to your ai-zeroth account. Joined the interest list? You’ll still need to create an account.'}</p>
+    <p className="dialog-description">{register ? 'Create your account and find your place by the fire.' : 'Sign in to meet your guild and plan your next adventure.'}</p>
+    {socialError && <p role="alert" className="form-error">Google sign-in wasn’t completed. Please try again or sign in with email.</p>}
     {!available ? <div role="status"><p>Accounts are temporarily unavailable. Please try again later.</p><p className="account-note">You can still <a href="/signup">join the interest list</a> or <a href="/guilds">browse guilds</a> without an account.</p><Button variant="outline" onClick={() => window.location.reload()}>Try again</Button></div> : <>
       <form method="post" onSubmit={submit} aria-busy={pending}>
         <noscript><p role="status">Please enable JavaScript to securely use your account.</p></noscript>
@@ -61,10 +64,10 @@ export function AccountForm({ register, available, returnTo }: { register?: bool
         <div className="password-tools">{register && <span id="password-help">At least 12 characters.</span>}<button type="button" aria-pressed={showPassword} onClick={() => setShowPassword(!showPassword)}>{showPassword ? 'Hide password' : 'Show password'}</button></div>
         {error && <p className="form-error" role="alert" ref={errorRef} tabIndex={-1}>{error}</p>}
         <div className="form-actions"><Button type="submit" disabled={!ready || pending}>{pending ? register ? 'Creating account…' : 'Signing in…' : register ? 'Create account' : 'Sign in'}</Button></div>
-        <p className="account-note">Password recovery and email verification aren’t available yet. {register && 'Keep your password somewhere safe.'}</p>
+        {!register && <p className="account-note"><a href="/forgot-password">Forgot your password?</a></p>}
       </form>
+      <GoogleSignIn returnTo={returnTo} disabled={pending} />
       <p className="account-switch">{register ? 'Already have an account? ' : 'New here? '}<Link to={register ? '/login' : '/register'} search={{ returnTo }}>{register ? 'Sign in' : 'Create an account'}</Link></p>
     </>}
-    <p className="account-note">Just want updates? <a href="/signup">Join the account-free interest list</a>.</p>
-  </AccountShell>
+  </Shell>
 }

@@ -92,8 +92,9 @@ try {
     assert.equal(await page.getByLabel('Name or nickname', { exact: true }).inputValue(), 'Saved synthetic nickname')
     await page.goto('/')
     await visible(page.getByRole('button', { name: 'My account', exact: false }))
-    assert.equal(await page.locator('.signup-qr').getAttribute('href'), '/signup')
-    console.log('PASS registration, client/server password minimum, pending state, cookie session, reload, private DTO, account update, header and QR')
+    assert.equal(await page.locator('.signup-qr').count(), 0)
+    assert.equal(await page.getByRole('navigation', { name: 'Adventures' }).getByRole('link').count(), 3)
+    console.log('PASS registration, client/server password minimum, pending state, cookie session, reload, private DTO, account update and home navigation')
 
     // Copy the cookie into an independent client, then prove signout revokes it in D1.
     const replay = await request.newContext({ baseURL: origin, storageState: await context.storageState(), extraHTTPHeaders: { Origin: origin } })
@@ -148,8 +149,8 @@ try {
       const layout = await page.evaluate(() => ({ documentWidth: document.documentElement.scrollWidth, width: innerWidth, cardWidth: document.querySelector('.account-card').scrollWidth, cardClient: document.querySelector('.account-card').clientWidth }))
       assert(layout.documentWidth <= layout.width)
       assert(layout.cardWidth <= layout.cardClient)
-      await page.getByRole('link', { name: 'Join the account-free interest list' }).scrollIntoViewIfNeeded()
-      const box = await page.getByRole('link', { name: 'Join the account-free interest list' }).boundingBox()
+      await page.locator('.account-switch').getByRole('link', { name: 'Sign in', exact: true }).scrollIntoViewIfNeeded()
+      const box = await page.locator('.account-switch').getByRole('link', { name: 'Sign in', exact: true }).boundingBox()
       assert(box.y >= 0 && box.y + box.height <= height)
       await page.screenshot({ path: `test-results/auth-register-${width}.png` })
       await page.locator('.account-main').evaluate(element => { element.scrollTop = 0 })

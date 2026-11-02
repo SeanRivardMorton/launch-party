@@ -9,7 +9,7 @@ export const Route = createRootRoute({
       { charSet: 'utf-8' },
       { name: 'viewport', content: 'width=device-width, initial-scale=1' },
       { title: 'ai-zeroth — Your people. Your next adventure.' },
-      { name: 'description', content: 'Find your WoW Forever launch crew. Shared play times, complementary professions, and people who get real life. Join the early-access list.' },
+      { name: 'description', content: 'Your characters, your guild, your next adventure. Meet your WoW Forever crew around the campfire.' },
       { name: 'theme-color', content: '#081b23' },
     ],
     links: [{ rel: 'stylesheet', href: stylesheet }, { rel: 'stylesheet', href: pixelStylesheet }, { rel: 'icon', href: '/favicon.svg', type: 'image/svg+xml' }],

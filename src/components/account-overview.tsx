@@ -45,7 +45,7 @@ function SavedAvatar({ url, format }: { url: string; format: string }) {
     : <div className={format === 'codex-pet-v1' ? 'account-avatar account-avatar-sheet' : 'account-avatar'}><img src={url} alt="Your saved campfire avatar" onError={() => setFailed(true)} /></div>
 }
 
-export function CharacterOverview({ active }: { active: string | false }) {
+export function CharacterOverview({ active, section = 'all' }: { active: string | false; section?: 'all' | 'characters' | 'guilds' }) {
   const state = useAccountOverview(active)
   useEffect(() => {
     if (!state.data) return
@@ -56,7 +56,7 @@ export function CharacterOverview({ active }: { active: string | false }) {
   if (!state.data) return <OverviewStatus state={state} />
   const { campfire, memberships, applications } = state.data
   return <>
-    <section id="characters" className="account-section" aria-labelledby="characters-title">
+    {section !== 'guilds' && <section id="characters" className="account-section" aria-labelledby="characters-title">
       <h2 id="characters-title">My characters</h2>
       <p className="account-note">Account and character names are separate. Each profile is saved independently.</p>
       {!campfire && !memberships.length && <p>No saved character yet. Application profiles, if any, are listed separately below.</p>}
@@ -71,8 +71,8 @@ export function CharacterOverview({ active }: { active: string | false }) {
         <h3>{membership.guildName} · guild character</h3><CharacterDetails profile={membership.profile} />
         <a href={`/guilds/${encodeURIComponent(membership.guildId)}/manage#my-character`}>Edit this guild character</a>
       </article>)}
-    </section>
-    <section id="guilds" className="account-section" aria-labelledby="my-guilds-title"><h2 id="my-guilds-title">My guilds</h2>
+    </section>}
+    {section !== 'characters' && <><section id="guilds" className="account-section" aria-labelledby="my-guilds-title"><h2 id="my-guilds-title">My guilds</h2>
       {memberships.length ? <ul className="account-guild-list">{memberships.map(membership => <li key={membership.guildId}>
         <strong>{membership.guildName}</strong><span>Approved membership · {membership.role}</span>
         <a href={`/guilds/${encodeURIComponent(membership.guildId)}/manage`}>Guild hall</a>
@@ -84,6 +84,6 @@ export function CharacterOverview({ active }: { active: string | false }) {
         <p>{application.status === 'pending' ? 'Awaiting approval. This is not a guild membership.' : 'Not approved. You can review the guild and apply again.'}</p>
         <CharacterDetails profile={application.profile} /><a href={`/guilds/${encodeURIComponent(application.guildId)}/apply`}>View application / guild</a>
       </article>) : <p>No pending or declined applications.</p>}
-    </section>
+    </section></>}
   </>
 }
