@@ -11,7 +11,21 @@
 **Event:** DevDay Exchange Community Hackathon, London — https://luma.com/dde-ldn-hack  
 **Submission deadline:** 1 November 2026, 17:00 Europe/London (GMT on this date).
 
-### Latest owner scope update — character signup and guild discovery
+### Latest owner scope update — post-hackathon home
+
+The hackathon is over. Remove the large presentation QR code and replace it with
+a centered, session-aware home panel. Signed-out visitors should see email/password
+login, Google sign-in, a registration option and password recovery. Signed-in
+users should see **Characters**, **Guild** and **Calendar** navigation. Reuse saved
+character data and approved memberships; keep the separate interest form available
+without promoting submissions into accounts. Preserve the animated scenery and
+race-based themes. Calendar initially provides an authenticated month view, with
+event scheduling still a separate feature. Google OAuth and recovery email require
+the operator's credentials/sender setup documented in `AUTH.md`; unconfigured
+providers must not pretend to work. This supersedes the QR presentation requirement
+and earlier blanket exclusion of password recovery below.
+
+### Earlier owner scope update — character signup and guild discovery
 
 The owner subsequently requested a text-free presentation landing screen with a large signup QR code, followed by signup collecting faction (Alliance/Horde), planned race/class, multiple fulfillable roles and professions. Prospects must also be able to list their guild publicly or discover a guild to join. This supersedes the guild-directory exclusion below for this lightweight milestone; full guild administration remains out of scope.
 

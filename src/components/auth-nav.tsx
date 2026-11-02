@@ -27,7 +27,7 @@ export function AuthNav() {
     try {
       const result = await authClient.signOut()
       if (result.error) throw new Error('Signout failed')
-      window.location.replace('/login')
+      window.location.replace('/')
     } catch { setSignoutError('Couldn’t sign out. Please try again.'); setBusy(false) }
   }
   return <nav ref={root} className="account-nav" aria-label="Account" onBlur={event => {
@@ -48,7 +48,7 @@ export function AuthNav() {
           if (!open && event.key === 'ArrowDown') { event.preventDefault(); setOpen(true) }
         }}>My account <span aria-hidden="true">▾</span></button>
           {open && <div ref={panel} id="account-navigation" className="account-menu">
-            <a href="/account#characters">My character(s)</a><a href="/account#guilds">My guild(s)</a>
+            <a href="/characters">Characters</a><a href="/guild">Guild</a><a href="/calendar">Calendar</a>
             {overview.data ? <>{overview.data.memberships.length ? overview.data.memberships.map(guild => <div key={guild.guildId}><a href={`/guilds/${encodeURIComponent(guild.guildId)}/manage`}>{guild.guildName} · guild hall</a>{guild.campfireAvailable && <a href={`/campfire?guild=${encodeURIComponent(guild.guildId)}`}>{guild.guildName} · campfire</a>}</div>) : <p>No approved guild memberships.</p>}
               {overview.data.applications.some(application => application.status === 'pending') && <a href="/account#applications-title">Pending applications (not memberships)</a>}</> : !busy && <OverviewStatus state={overview} />}
             <a href="/account#account-settings">Account settings</a>
